@@ -10,7 +10,7 @@ title1=Student MDBM
 
 title2=Business Intelligence, Project Management - Mercedenz-Benz AG
 
-expertise=Agentic AI, 
+expertise=Agentic AI, Digital Business and Digital Transformation
 
 education=M.S. Hochschule Pforzheim
 
