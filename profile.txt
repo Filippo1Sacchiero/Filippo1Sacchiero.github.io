@@ -8,9 +8,9 @@ name=Filippo Sacchiero
 
 title1=Student MDBM
 
-title2=Italian
+title2=Business Intelligence, Project Management - Mercedenz-Benz AG
 
-expertise=Agentic AI
+expertise=Agentic AI, 
 
 education=M.S. Hochschule Pforzheim
 
