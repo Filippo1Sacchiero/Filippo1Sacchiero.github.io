@@ -1,2 +1,2 @@
 Video object recognition
-https://drluarn.github.io/
+https://filippo1sacchiero.github.io/media_pipe/#video

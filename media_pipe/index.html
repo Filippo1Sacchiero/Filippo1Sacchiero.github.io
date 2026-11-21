@@ -1251,5 +1251,18 @@
   <script src="static/js/tmclassify.js"></script>
   <script src="static/vendor/ort/ort.webgpu.min.js"></script>
   <script src="static/js/yolo.js"></script>
+  <script>
+    // Deep links: index.html#face, #face-video, #video, #fitness, #gesture, #background, #shapes, #particles, #tm, #yolo
+    window.addEventListener('load', () => {
+      const map = {
+        image: ['tabImageBtn'], video: ['tabVideoBtn', 'subtabFileUpload'],
+        face: ['tabFaceBtn'], 'face-video': ['tabFaceBtn', 'faceSubtabVideo'],
+        fitness: ['tabFitnessBtn'], gesture: ['tabGestureBtn'], background: ['tabBackgroundBtn'],
+        shapes: ['tabShapesBtn'], particles: ['tabParticlesBtn'], tm: ['tabTmBtn'], yolo: ['tabYoloBtn'],
+      };
+      const ids = map[location.hash.slice(1).toLowerCase()];
+      if (ids) ids.forEach((id) => { const b = document.getElementById(id); if (b) b.click(); });
+    });
+  </script>
 </body>
 </html>
