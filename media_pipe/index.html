@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediaPipe Object Recognition (Images &amp; Video)</title>
+  <link rel="stylesheet" href="static/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="3" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <path d="M21 15l-5-5L5 21" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="app-title">Object Recognition</h1>
+          <p class="app-subtitle">Powered by Google MediaPipe &bull; Images, Local Videos &amp; YouTube</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <span class="badge badge-success">
+          <span class="badge-dot"></span> Local Engine Active
+        </span>
+      </div>
+    </header>
+
+    <!-- Mode Selector Tabs -->
+    <div class="tabs-nav">
+      <button class="tab-btn active" id="tabImageBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2" />
+          <circle cx="8.5" cy="8.5" r="1.5" />
+          <polyline points="21 15 16 10 5 21" />
+        </svg>
+        <span>Image Upload</span>
+      </button>
+      <button class="tab-btn" id="tabVideoBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="23 7 16 12 23 17 23 7" />
+          <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+        </svg>
+        <span>Video &amp; YouTube Detection</span>
+      </button>
+      <button class="tab-btn" id="tabFaceBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <ellipse cx="12" cy="12" rx="7" ry="9" />
+          <path d="M9 10h.01M15 10h.01M9.5 15.5c1.5 1 3.5 1 5 0" />
+        </svg>
+        <span>Face Mesh</span>
+      </button>
+      <button class="tab-btn" id="tabFitnessBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6.5 6.5v11M17.5 6.5v11M3 9v6M21 9v6M6.5 12h11" />
+        </svg>
+        <span>Fitness Coach</span>
+      </button>
+      <button class="tab-btn" id="tabGestureBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 11V6a2 2 0 0 0-4 0v5M14 10V4a2 2 0 0 0-4 0v6M10 10.5V6a2 2 0 0 0-4 0v8" />
+          <path d="M18 8a2 2 0 0 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" />
+        </svg>
+        <span>Gestures</span>
+      </button>
+      <button class="tab-btn" id="tabBackgroundBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="4" width="20" height="16" rx="2" />
+          <circle cx="12" cy="11" r="3" />
+          <path d="M6 20c1-3 3.5-4.5 6-4.5s5 1.5 6 4.5" />
+        </svg>
+        <span>Background</span>
+      </button>
+      <button class="tab-btn" id="tabShapesBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="8" cy="9" r="3" /><circle cx="8" cy="9" r="1" />
+          <rect x="14" y="6" width="6" height="6" /><path d="M12 14l3 6H9z" />
+        </svg>
+        <span>Face Shapes</span>
+      </button>
+      <button class="tab-btn" id="tabParticlesBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="1.5" /><circle cx="5" cy="6" r="1" /><circle cx="19" cy="7" r="1" /><circle cx="6" cy="18" r="1" /><circle cx="18" cy="17" r="1" /><circle cx="12" cy="4" r="1" /><circle cx="12" cy="20" r="1" />
+        </svg>
+        <span>Particles</span>
+      </button>
+      <button class="tab-btn" id="tabTmBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="3" /><path d="M8 12l3 3 5-6" />
+        </svg>
+        <span>My Model</span>
+      </button>
+      <button class="tab-btn" id="tabYoloBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 7V4h3M18 4h3v3M21 17v3h-3M6 20H3v-3" /><rect x="7" y="8" width="10" height="8" rx="1" />
+        </svg>
+        <span>YOLO Studio</span>
+      </button>
+    </div>
+
+    <!-- Main Content Grid -->
+    <main class="main-grid">
+      <!-- Left Column: Controls & Input -->
+      <section class="card upload-card">
+        
+        <!-- ==================== IMAGE MODE ==================== -->
+        <div id="imageInputSection">
+          <div class="card-header">
+            <h2>Upload Image</h2>
+            <span class="text-muted">JPEG, PNG, WEBP</span>
+          </div>
+
+          <!-- Drag & Drop Zone -->
+          <div class="drop-zone" id="dropZone">
+            <input type="file" id="fileInput" accept="image/png, image/jpeg, image/webp, image/bmp" style="display: none;">
+            <div class="drop-content" id="dropContent">
+              <div class="upload-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+              </div>
+              <p class="drop-primary-text"><strong>Drag &amp; drop an image</strong> or <span class="browse-link">browse</span></p>
+              <p class="drop-secondary-text">On-demand MediaPipe inference</p>
+            </div>
+            <!-- Preview in dropzone before recognition -->
+            <div class="drop-preview" id="dropPreview" style="display: none;">
+              <img id="previewThumb" alt="Selected thumbnail">
+              <div class="preview-info">
+                <span id="previewName" class="preview-filename">image.jpg</span>
+                <button type="button" class="btn-sm btn-outline" id="clearSelectionBtn">Change Image</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Detection Settings -->
+          <div class="settings-panel">
+            <div class="setting-item">
+              <div class="setting-header">
+                <label for="thresholdSlider">Confidence Threshold</label>
+                <span class="setting-value" id="thresholdValue">50%</span>
+              </div>
+              <input type="range" id="thresholdSlider" min="10" max="95" value="50" step="5" class="slider">
+              <div class="slider-labels">
+                <span>More detections (10%)</span>
+                <span>Higher precision (95%)</span>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-header">
+                <label for="maxResultsSelect">Maximum Results</label>
+                <select id="maxResultsSelect" class="form-select">
+                  <option value="5">Up to 5 objects</option>
+                  <option value="10" selected>Up to 10 objects</option>
+                  <option value="20">Up to 20 objects</option>
+                  <option value="50">Up to 50 objects</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Image Submit Button -->
+          <button id="recognizeBtn" class="btn btn-primary btn-block" disabled>
+            <span class="btn-spinner" id="btnSpinner" style="display: none;"></span>
+            <span id="btnText">Select an Image to Recognize</span>
+          </button>
+
+          <!-- Sample Images Section -->
+          <div class="samples-section">
+            <p class="samples-label">Or try a sample image:</p>
+            <div class="samples-grid" id="samplesContainer">
+              
+                
+                  <button type="button" class="sample-btn" data-sample="cat_and_dog.jpg">
+                    <img src="static/samples/cat_and_dog.jpg" alt="cat_and_dog.jpg">
+                    <span>Cat_and_dog</span>
+                  </button>
+                
+                  <button type="button" class="sample-btn" data-sample="desk_and_chair.jpg">
+                    <img src="static/samples/desk_and_chair.jpg" alt="desk_and_chair.jpg">
+                    <span>Desk_and_chair</span>
+                  </button>
+                
+                  <button type="button" class="sample-btn" data-sample="fruits.jpg">
+                    <img src="static/samples/fruits.jpg" alt="fruits.jpg">
+                    <span>Fruits</span>
+                  </button>
+                
+                  <button type="button" class="sample-btn" data-sample="portrait_face.jpg">
+                    <img src="static/samples/portrait_face.jpg" alt="portrait_face.jpg">
+                    <span>Portrait_face</span>
+                  </button>
+                
+              
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== VIDEO / YOUTUBE MODE ==================== -->
+        <div id="videoInputSection" style="display: none;">
+          <div class="card-header">
+            <h2>Video Recognition</h2>
+            <span class="text-muted">YouTube URL or Video File</span>
+          </div>
+
+          <!-- Video Source Selector -->
+          <div class="video-subtabs">
+            <button class="subtab-btn active" id="subtabYoutube">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+              </svg>
+              <span>YouTube Link</span>
+            </button>
+            <button class="subtab-btn" id="subtabFileUpload">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              <span>Video File</span>
+            </button>
+          </div>
+
+          <!-- YouTube Input Form -->
+          <div id="youtubeInputArea">
+            <div class="input-group">
+              <label for="youtubeUrlInput" class="form-label">Paste YouTube Video URL:</label>
+              <input type="text" id="youtubeUrlInput" class="form-control" placeholder="https://www.youtube.com/watch?v=...">
+            </div>
+            <div class="quick-links">
+              <span class="quick-label">Try sample link:</span>
+              <button type="button" class="quick-link-btn" data-url="https://www.youtube.com/watch?v=dQw4w9WgXcQ">Demo Music Video</button>
+            </div>
+          </div>
+
+          <!-- Video File Upload Area -->
+          <div id="videoFileArea" style="display: none;">
+            <div class="drop-zone" id="videoDropZone">
+              <input type="file" id="videoFileInput" accept="video/mp4, video/quicktime, video/webm, video/x-msvideo" style="display: none;">
+              <div class="drop-content" id="videoDropContent">
+                <div class="upload-icon">
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <polygon points="23 7 16 12 23 17 23 7" />
+                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+                  </svg>
+                </div>
+                <p class="drop-primary-text"><strong>Drag &amp; drop video</strong> or <span class="browse-link">browse</span></p>
+                <p class="drop-secondary-text">MP4, MOV, WEBM (up to 150MB)</p>
+              </div>
+              <div class="drop-preview" id="videoDropPreview" style="display: none;">
+                <div class="preview-info">
+                  <span id="videoPreviewName" class="preview-filename">video.mp4</span>
+                  <button type="button" class="btn-sm btn-outline" id="clearVideoSelectionBtn">Change Video</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Video Processing Options -->
+          <div class="settings-panel">
+            <div class="setting-item">
+              <div class="setting-header">
+                <label for="videoThresholdSlider">Confidence Threshold</label>
+                <span class="setting-value" id="videoThresholdValue">45%</span>
+              </div>
+              <input type="range" id="videoThresholdSlider" min="15" max="90" value="45" step="5" class="slider">
+            </div>
+
+            <div class="setting-grid-2">
+              <div class="setting-item">
+                <label for="sampleFpsSelect" class="setting-header">Sampling Rate</label>
+                <select id="sampleFpsSelect" class="form-select">
+                  <option value="2">2 FPS (Ultra Fast)</option>
+                  <option value="5" selected>5 FPS (Recommended)</option>
+                  <option value="10">10 FPS (High Accuracy)</option>
+                  <option value="0">All Frames (Slower)</option>
+                </select>
+              </div>
+
+              <div class="setting-item">
+                <label for="maxDurationSelect" class="setting-header">Max Clip Length</label>
+                <select id="maxDurationSelect" class="form-select">
+                  <option value="15">First 15 seconds</option>
+                  <option value="30" selected>First 30 seconds</option>
+                  <option value="60">First 60 seconds</option>
+                  <option value="120">First 120 seconds</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Video Start Button -->
+          <button id="processVideoBtn" class="btn btn-primary btn-block">
+            <span class="btn-spinner" id="videoBtnSpinner" style="display: none;"></span>
+            <span id="videoBtnText">Run Video Recognition</span>
+          </button>
+
+          <!-- Live Progress Container -->
+          <div class="progress-container" id="videoProgressContainer" style="display: none;">
+            <div class="progress-header">
+              <span id="videoProgressStatus">Processing video frames...</span>
+              <span id="videoProgressPct">0%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-bar" id="videoProgressBar" style="width: 0%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== FACE MESH MODE ==================== -->
+        <div id="faceInputSection" style="display: none;">
+          <div class="card-header">
+            <h2>Face Mesh</h2>
+            <span class="text-muted">468 3D landmarks</span>
+          </div>
+
+          <div class="video-subtabs">
+            <button class="subtab-btn active" id="faceSubtabImage">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <circle cx="8.5" cy="8.5" r="1.5" />
+                <polyline points="21 15 16 10 5 21" />
+              </svg>
+              <span>Image</span>
+            </button>
+            <button class="subtab-btn" id="faceSubtabVideo">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="23 7 16 12 23 17 23 7" />
+                <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+              </svg>
+              <span>Video File</span>
+            </button>
+          </div>
+
+          <!-- Face video input -->
+          <div id="faceVideoArea" style="display: none;">
+            <div class="drop-zone" id="faceVideoDropZone">
+              <input type="file" id="faceVideoFileInput" accept="video/mp4, video/quicktime, video/webm, video/x-msvideo, video/x-matroska, .mkv, .m4v" style="display: none;">
+              <div class="drop-content" id="faceVideoDropContent">
+                <div class="upload-icon">
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <polygon points="23 7 16 12 23 17 23 7" />
+                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+                  </svg>
+                </div>
+                <p class="drop-primary-text"><strong>Drag &amp; drop a video</strong> or <span class="browse-link">browse</span></p>
+                <p class="drop-secondary-text">MP4, MOV, WEBM, AVI, MKV (up to 150MB)</p>
+              </div>
+              <div class="drop-preview" id="faceVideoDropPreview" style="display: none;">
+                <div class="preview-info">
+                  <span id="faceVideoPreviewName" class="preview-filename">video.mp4</span>
+                  <button type="button" class="btn-sm btn-outline" id="faceVideoClearBtn">Change Video</button>
+                </div>
+              </div>
+            </div>
+            <div class="settings-panel">
+              <div class="setting-grid-2">
+                <div class="setting-item">
+                  <label for="faceSampleFpsSelect" class="setting-header">Sampling Rate</label>
+                  <select id="faceSampleFpsSelect" class="form-select">
+                    <option value="5">5 FPS (Fast)</option>
+                    <option value="10" selected>10 FPS (Recommended)</option>
+                    <option value="15">15 FPS (Smooth)</option>
+                    <option value="0">All Frames (Slower)</option>
+                  </select>
+                </div>
+                <div class="setting-item">
+                  <label for="faceMaxDurationSelect" class="setting-header">Max Clip Length</label>
+                  <select id="faceMaxDurationSelect" class="form-select">
+                    <option value="15">First 15 seconds</option>
+                    <option value="30" selected>First 30 seconds</option>
+                    <option value="60">First 60 seconds</option>
+                    <option value="120">First 120 seconds</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="faceImageArea">
+          <div class="drop-zone" id="faceDropZone">
+            <input type="file" id="faceFileInput" accept="image/png, image/jpeg, image/webp, image/bmp" style="display: none;">
+            <div class="drop-content" id="faceDropContent">
+              <div class="upload-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+              </div>
+              <p class="drop-primary-text"><strong>Drag &amp; drop a face photo</strong> or <span class="browse-link">browse</span></p>
+              <p class="drop-secondary-text">MediaPipe Face Mesh, runs locally</p>
+            </div>
+            <div class="drop-preview" id="faceDropPreview" style="display: none;">
+              <img id="facePreviewThumb" alt="Selected thumbnail">
+              <div class="preview-info">
+                <span id="facePreviewName" class="preview-filename">image.jpg</span>
+                <button type="button" class="btn-sm btn-outline" id="faceClearBtn">Change Image</button>
+              </div>
+            </div>
+          </div>
+          </div>
+
+          <!-- Detection settings (re-run the model) -->
+          <div class="settings-panel">
+            <div class="setting-item">
+              <div class="setting-header">
+                <label for="faceConfidenceSlider">Min. Detection Confidence</label>
+                <span class="setting-value" id="faceConfidenceValue">50%</span>
+              </div>
+              <input type="range" id="faceConfidenceSlider" min="10" max="95" value="50" step="5" class="slider">
+            </div>
+            <div class="setting-grid-2">
+              <div class="setting-item">
+                <label for="maxFacesSelect" class="setting-header">Max Faces</label>
+                <select id="maxFacesSelect" class="form-select">
+                  <option value="1" selected>1 face</option>
+                  <option value="2">2 faces</option>
+                  <option value="5">5 faces</option>
+                  <option value="10">10 faces</option>
+                </select>
+              </div>
+              <div class="setting-item">
+                <label for="refineSelect" class="setting-header">Iris Refinement</label>
+                <select id="refineSelect" class="form-select">
+                  <option value="true" selected>On (478 points)</option>
+                  <option value="false">Off (468 points)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <button id="faceRunBtn" class="btn btn-primary btn-block" disabled>
+            <span class="btn-spinner" id="faceBtnSpinner" style="display: none;"></span>
+            <span id="faceBtnText">Select a Face Image</span>
+          </button>
+
+          <div class="progress-container" id="faceProgressContainer" style="display: none;">
+            <div class="progress-header">
+              <span id="faceProgressStatus">Processing video frames...</span>
+              <span id="faceProgressPct">0%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-bar" id="faceProgressBar" style="width: 0%;"></div>
+            </div>
+          </div>
+
+          <!-- Drawing style (instant, no re-run) -->
+          <div class="settings-panel style-panel">
+            <p class="style-panel-title">Drawing Style <span class="text-muted">updates instantly</span></p>
+
+            <div class="setting-item">
+              <label for="faceBackgroundSelect" class="setting-header">Background</label>
+              <select id="faceBackgroundSelect" class="form-select">
+                <option value="photo" selected>Original photo</option>
+                <option value="dim">Dimmed photo</option>
+                <option value="black">Black</option>
+              </select>
+            </div>
+
+            <div class="layer-list">
+              <div class="layer-row">
+                <label class="layer-toggle"><input type="checkbox" id="layerMesh" checked> Mesh (tesselation)</label>
+                <input type="color" id="colorMesh" value="#c0c0c0" class="color-input" title="Mesh color">
+              </div>
+              <div class="layer-row">
+                <label class="layer-toggle"><input type="checkbox" id="layerContours" checked> Contours</label>
+                <input type="color" id="colorContours" value="#ffffff" class="color-input" title="Contour color">
+              </div>
+              <div class="layer-row">
+                <label class="layer-toggle"><input type="checkbox" id="layerIrises" checked> Irises</label>
+                <input type="color" id="colorIrises" value="#30ff30" class="color-input" title="Iris color">
+              </div>
+              <div class="layer-row">
+                <label class="layer-toggle"><input type="checkbox" id="layerPoints"> Landmark points</label>
+                <input type="color" id="colorPoints" value="#ff3366" class="color-input" title="Point color">
+              </div>
+              <div class="layer-row">
+                <label class="layer-toggle"><input type="checkbox" id="layerBoxes"> Face box</label>
+                <input type="color" id="colorBoxes" value="#3b82f6" class="color-input" title="Box color">
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <label for="contourModeSelect" class="setting-header">Contour Colors</label>
+              <select id="contourModeSelect" class="form-select">
+                <option value="single" selected>Single color</option>
+                <option value="feature">Color per feature (eyes, brows, lips, oval)</option>
+              </select>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-header">
+                <label for="lineWidthSlider">Line Width</label>
+                <span class="setting-value" id="lineWidthValue">1.0</span>
+              </div>
+              <input type="range" id="lineWidthSlider" min="0.25" max="5" value="1" step="0.25" class="slider">
+            </div>
+            <div class="setting-item">
+              <div class="setting-header">
+                <label for="meshOpacitySlider">Mesh Opacity</label>
+                <span class="setting-value" id="meshOpacityValue">60%</span>
+              </div>
+              <input type="range" id="meshOpacitySlider" min="5" max="100" value="60" step="5" class="slider">
+            </div>
+            <div class="setting-item">
+              <div class="setting-header">
+                <label for="pointSizeSlider">Point Size</label>
+                <span class="setting-value" id="pointSizeValue">1.5</span>
+              </div>
+              <input type="range" id="pointSizeSlider" min="0.5" max="6" value="1.5" step="0.5" class="slider">
+            </div>
+            <div class="layer-row">
+              <label class="layer-toggle"><input type="checkbox" id="interpolateToggle" checked> Smooth video motion between sampled frames</label>
+            </div>
+          </div>
+
+          <div class="samples-section" id="faceSamplesSection">
+            <p class="samples-label">Or try a sample image:</p>
+            <div class="samples-grid">
+              
+                <button type="button" class="sample-btn face-sample-btn" data-sample="cat_and_dog.jpg">
+                  <img src="static/samples/cat_and_dog.jpg" alt="cat_and_dog.jpg">
+                  <span>Cat_and_dog</span>
+                </button>
+              
+                <button type="button" class="sample-btn face-sample-btn" data-sample="desk_and_chair.jpg">
+                  <img src="static/samples/desk_and_chair.jpg" alt="desk_and_chair.jpg">
+                  <span>Desk_and_chair</span>
+                </button>
+              
+                <button type="button" class="sample-btn face-sample-btn" data-sample="fruits.jpg">
+                  <img src="static/samples/fruits.jpg" alt="fruits.jpg">
+                  <span>Fruits</span>
+                </button>
+              
+                <button type="button" class="sample-btn face-sample-btn" data-sample="portrait_face.jpg">
+                  <img src="static/samples/portrait_face.jpg" alt="portrait_face.jpg">
+                  <span>Portrait_face</span>
+                </button>
+              
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== FITNESS COACH MODE ==================== -->
+        <div id="fitnessInputSection" style="display: none;">
+          <div class="card-header">
+            <h2>Fitness Coach</h2>
+            <span class="text-muted">Arm curl rep counter</span>
+          </div>
+
+          <div class="video-subtabs">
+            <button class="subtab-btn active" id="fitSubtabCamera">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+              </svg>
+              <span>Webcam</span>
+            </button>
+            <button class="subtab-btn" id="fitSubtabVideo">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="23 7 16 12 23 17 23 7" />
+                <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+              </svg>
+              <span>Video File</span>
+            </button>
+          </div>
+
+          <div id="fitCameraArea">
+            <p class="fit-help">Stand so your shoulders, elbows and wrists are in view, arms straight to start. Each straight → bent → straight cycle is one rep, counted per arm.</p>
+          </div>
+
+          <div id="fitVideoArea" style="display: none;">
+            <div class="drop-zone" id="fitDropZone">
+              <input type="file" id="fitFileInput" accept="video/*" style="display: none;">
+              <div class="drop-content" id="fitDropContent">
+                <div class="upload-icon">
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <polygon points="23 7 16 12 23 17 23 7" />
+                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+                  </svg>
+                </div>
+                <p class="drop-primary-text"><strong>Drag &amp; drop a workout video</strong> or <span class="browse-link">browse</span></p>
+                <p class="drop-secondary-text">Analyzed in your browser, nothing is uploaded</p>
+              </div>
+              <div class="drop-preview" id="fitDropPreview" style="display: none;">
+                <div class="preview-info">
+                  <span id="fitPreviewName" class="preview-filename">video.mp4</span>
+                  <button type="button" class="btn-sm btn-outline" id="fitClearBtn">Change Video</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button id="fitStartBtn" class="btn btn-primary btn-block">
+            <span class="btn-spinner" id="fitBtnSpinner" style="display: none;"></span>
+            <span id="fitBtnText">Start Camera</span>
+          </button>
+          <p class="fit-status" id="fitStatus"></p>
+
+          <div class="settings-panel">
+            <p class="style-panel-title">Rep Thresholds <span class="text-muted">elbow angle</span></p>
+            <div class="setting-item">
+              <div class="setting-header">
+                <label for="fitStraightSlider">Straight at or above</label>
+                <span class="setting-value" id="fitStraightValue">150°</span>
+              </div>
+              <input type="range" id="fitStraightSlider" min="120" max="175" value="150" step="5" class="slider">
+            </div>
+            <div class="setting-item">
+              <div class="setting-header">
+                <label for="fitBentSlider">Bent at or below</label>
+                <span class="setting-value" id="fitBentValue">60°</span>
+              </div>
+              <input type="range" id="fitBentSlider" min="25" max="110" value="60" step="5" class="slider">
+            </div>
+            <div class="setting-item">
+              <label for="fitModelSelect" class="setting-header">Pose Model</label>
+              <select id="fitModelSelect" class="form-select">
+                <option value="lite" selected>Lite (fastest)</option>
+                <option value="full">Full (more accurate)</option>
+              </select>
+            </div>
+            <div class="layer-list">
+              <div class="layer-row"><label class="layer-toggle"><input type="checkbox" id="fitMirror" checked> Mirror view (like a mirror)</label></div>
+              <div class="layer-row"><label class="layer-toggle"><input type="checkbox" id="fitSkeleton" checked> Show full-body skeleton</label></div>
+              <div class="layer-row"><label class="layer-toggle"><input type="checkbox" id="fitVoice"> Voice: say each rep out loud</label></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== GESTURES MODE ==================== -->
+        <div id="gestureInputSection" style="display: none;">
+          <div class="card-header">
+            <h2>Gesture Recognizer</h2>
+            <span class="text-muted">Two hands, real time</span>
+          </div>
+
+          <p class="fit-help">Show one or both hands to the camera. Recognized gestures: ✊ fist, ✋ open palm, ☝️ pointing up, 👍 thumb up, 👎 thumb down, ✌️ victory, 🤟 I love you.</p>
+
+          <button id="gestStartBtn" class="btn btn-primary btn-block">
+            <span class="btn-spinner" id="gestBtnSpinner" style="display: none;"></span>
+            <span id="gestBtnText">Start Camera</span>
+          </button>
+          <p class="fit-status" id="gestStatus"></p>
+
+          <div class="settings-panel">
+            <div class="setting-item">
+              <div class="setting-header">
+                <label for="gestScoreSlider">Min. Gesture Confidence</label>
+                <span class="setting-value" id="gestScoreValue">50%</span>
+              </div>
+              <input type="range" id="gestScoreSlider" min="10" max="95" value="50" step="5" class="slider">
+            </div>
+            <div class="setting-item">
+              <label for="gestColorMode" class="setting-header">Landmark Colors</label>
+              <select id="gestColorMode" class="form-select">
+                <option value="hand" selected>By hand (left blue, right orange)</option>
+                <option value="finger">By finger (thumb, index, middle, ring, pinky)</option>
+              </select>
+            </div>
+            <div class="finger-legend" id="gestFingerLegend" style="display: none;">
+              <span><i style="background:#f43f5e"></i>Thumb</span>
+              <span><i style="background:#facc15"></i>Index</span>
+              <span><i style="background:#22c55e"></i>Middle</span>
+              <span><i style="background:#38bdf8"></i>Ring</span>
+              <span><i style="background:#a78bfa"></i>Pinky</span>
+            </div>
+            <div class="layer-list">
+              <div class="layer-row"><label class="layer-toggle"><input type="checkbox" id="gestMirror" checked> Mirror view (like a mirror)</label></div>
+              <div class="layer-row"><label class="layer-toggle"><input type="checkbox" id="gestLabels" checked> Show gesture labels on the video</label></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== BACKGROUND MODE ==================== -->
+        <div id="backgroundInputSection" style="display: none;">
+          <div class="card-header">
+            <h2>Virtual Background</h2>
+            <span class="text-muted">Selfie segmentation</span>
+          </div>
+
+          <button id="bgStartBtn" class="btn btn-primary btn-block">
+            <span class="btn-spinner" id="bgBtnSpinner" style="display: none;"></span>
+            <span id="bgBtnText">Start Camera</span>
+          </button>
+          <p class="fit-status" id="bgStatus"></p>
+
+          <div class="settings-panel">
+            <p class="style-panel-title">Keyboard Shortcuts <span class="text-muted">or click a key</span></p>
+
+            <div class="shortcut-group">
+              <span class="shortcut-label">Photos</span>
+              <div class="shortcut-keys">
+                <button type="button" class="kbd-btn" data-key="1"><kbd>1</kbd> Mountain lake</button>
+                <button type="button" class="kbd-btn" data-key="2"><kbd>2</kbd> Tropical beach</button>
+                <button type="button" class="kbd-btn" data-key="3"><kbd>3</kbd> Alpine meadow</button>
+                <button type="button" class="kbd-btn" data-key="4"><kbd>4</kbd> Desert dunes</button>
+              </div>
+            </div>
+
+            <div class="shortcut-group">
+              <span class="shortcut-label">Colors</span>
+              <div class="shortcut-keys">
+                <button type="button" class="kbd-btn" data-key="0"><kbd>0</kbd><i class="swatch" style="background:#000000"></i>Black</button>
+                <button type="button" class="kbd-btn" data-key="r"><kbd>R</kbd><i class="swatch" style="background:#dc2626"></i>Red</button>
+                <button type="button" class="kbd-btn" data-key="w"><kbd>W</kbd><i class="swatch" style="background:#ffffff"></i>White</button>
+                <button type="button" class="kbd-btn" data-key="y"><kbd>Y</kbd><i class="swatch" style="background:#facc15"></i>Yellow</button>
+                <button type="button" class="kbd-btn" data-key="g"><kbd>G</kbd><i class="swatch" style="background:#16a34a"></i>Green</button>
+              </div>
+            </div>
+
+            <div class="shortcut-group">
+              <span class="shortcut-label">Blur</span>
+              <div class="shortcut-keys">
+                <button type="button" class="kbd-btn" data-key="b"><kbd>B</kbd> Blur (press again for more)</button>
+                <button type="button" class="kbd-btn" data-action="none">Original</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-panel">
+            <div class="layer-list">
+              <div class="layer-row"><label class="layer-toggle"><input type="checkbox" id="bgMirror" checked> Mirror view (like a mirror)</label></div>
+              <div class="layer-row"><label class="layer-toggle"><input type="checkbox" id="bgSmooth" checked> Smooth mask edges over time (less flicker)</label></div>
+            </div>
+            <p class="fit-help" style="margin: 0;">Photos: public domain / CC0 from Wikimedia Commons. Credits in <code>static/backgrounds/CREDITS.md</code>.</p>
+          </div>
+        </div>
+
+        <!-- ==================== FACE SHAPES MODE ==================== -->
+        <div id="shapesInputSection" style="display: none;">
+          <div class="card-header">
+            <h2>Face Shapes</h2>
+            <span class="text-muted">Face Detection, 6 keypoints</span>
+          </div>
+          <p class="fit-help">Eyes are drawn as concentric circles; nose, mouth and ears get random shapes, sized like an eye. Press <kbd>any key</kbd> to reshuffle the shapes, <kbd>Esc</kbd> or <kbd>Q</kbd> to stop.</p>
+          <button id="shapesStartBtn" class="btn btn-primary btn-block">
+            <span class="btn-spinner" id="shapesBtnSpinner" style="display: none;"></span>
+            <span id="shapesBtnText">Start Camera</span>
+          </button>
+          <p class="fit-status" id="shapesStatus"></p>
+        </div>
+
+        <!-- ==================== PARTICLES MODE ==================== -->
+        <div id="particlesInputSection" style="display: none;">
+          <div class="card-header">
+            <h2>Particle Studio</h2>
+            <span class="text-muted">Hands + face, real time</span>
+          </div>
+          <p class="fit-help">Open and close your hand to grow or collapse the shape, which follows your palm. <b>Fist &rarr; open</b> switches shape &amp; color, 👍 next color, ✌️ burst. Come closer to shrink the range. The <b>Face</b> shape rebuilds your Face Shapes on your face. <kbd>Any key</kbd> random shape, <kbd>Esc</kbd>/<kbd>Q</kbd> stop.</p>
+          <div class="setting-item">
+            <label for="pcCount" class="setting-header">Particles</label>
+            <select id="pcCount" class="form-select">
+              <option value="1500">1,500 (light)</option>
+              <option value="3000" selected>3,000</option>
+              <option value="5000">5,000</option>
+              <option value="8000">8,000 (heavy)</option>
+            </select>
+          </div>
+          <div class="layer-list">
+            <div class="layer-row"><label class="layer-toggle"><input type="checkbox" id="pcShowVideo" checked> Show camera behind particles</label></div>
+            <div class="layer-row"><label class="layer-toggle"><input type="checkbox" id="pcShowSkeleton"> Show hand skeleton</label></div>
+          </div>
+          <button id="pcStartBtn" class="btn btn-primary btn-block">
+            <span class="btn-spinner" id="pcBtnSpinner" style="display: none;"></span>
+            <span id="pcBtnText">Start Camera</span>
+          </button>
+          <p class="fit-status" id="pcStatus"></p>
+        </div>
+
+        <!-- ==================== MY MODEL (TEACHABLE MACHINE) ==================== -->
+        <div id="tmInputSection" style="display: none;">
+          <div class="card-header">
+            <h2>My Model</h2>
+            <span class="text-muted">Teachable Machine</span>
+          </div>
+          <p class="fit-help">Recognizes the objects you trained: 📱 phone, ⌚ watch, 🍾 bottle, or ∅ empty. Use the webcam or upload a photo. <kbd>Esc</kbd>/<kbd>Q</kbd> stops the camera.</p>
+          <div class="setting-item">
+            <div class="setting-header">
+              <label for="tmThreshold">Minimum confidence</label>
+              <span id="tmThresholdValue">60%</span>
+            </div>
+            <input type="range" id="tmThreshold" min="30" max="95" step="5" value="60">
+          </div>
+          <button id="tmStartBtn" class="btn btn-primary btn-block">
+            <span class="btn-spinner" id="tmBtnSpinner" style="display: none;"></span>
+            <span id="tmBtnText">Start Camera</span>
+          </button>
+          <label class="btn btn-outline btn-block" style="margin-top: 10px; text-align: center; cursor: pointer;">
+            Upload a photo<input type="file" id="tmFile" accept="image/*" hidden>
+          </label>
+          <p class="fit-status" id="tmStatus"></p>
+        </div>
+
+        <!-- ==================== YOLO STUDIO ==================== -->
+        <div id="yoloInputSection" style="display: none;">
+          <div class="card-header">
+            <h2>YOLO Studio</h2>
+            <span class="text-muted">Ultralytics YOLO26n · in-browser</span>
+          </div>
+
+          <div class="setting-item">
+            <label for="yoloSource" class="setting-header">Source</label>
+            <select id="yoloSource" class="form-select">
+              <option value="cctv" selected>Live CCTV camera</option>
+              <option value="youtube">YouTube video (e.g. sports)</option>
+              <option value="webcam">Webcam</option>
+              <option value="file">Local video or image</option>
+            </select>
+          </div>
+
+          <div id="yoloCctvPanel" class="setting-item">
+            <label for="yoloCctvUrl" class="setting-header">Camera URL (MJPEG or JPEG)</label>
+            <input type="url" id="yoloCctvUrl" class="form-select" value="https://cctv.klcg.gov.tw/facd4662">
+            <div class="yolo-chips">
+              <button type="button" class="btn-sm btn-outline" data-yolo-cctv="https://cctv.klcg.gov.tw/facd4662">Keelung traffic cam</button>
+            </div>
+          </div>
+          <div id="yoloYoutubePanel" class="setting-item" style="display: none;">
+            <label for="yoloYtUrl" class="setting-header">YouTube URL</label>
+            <input type="url" id="yoloYtUrl" class="form-select" placeholder="https://www.youtube.com/watch?v=...">
+            <p class="fit-help" style="margin: 6px 0 0;">The server downloads it (≤720p) first; long videos take longer. Tip: use the <b>Sports</b> preset.</p>
+          </div>
+          <div id="yoloWebcamPanel" style="display: none;"></div>
+          <div id="yoloFilePanel" class="setting-item" style="display: none;">
+            <label class="btn btn-outline btn-block" style="text-align: center; cursor: pointer;">
+              Choose video or image<input type="file" id="yoloFile" accept="video/*,image/*" hidden>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-header">
+              <label for="yoloConf">Confidence</label>
+              <span id="yoloConfValue">35%</span>
+            </div>
+            <input type="range" id="yoloConf" min="10" max="90" step="5" value="35">
+          </div>
+          <div class="setting-item">
+            <label for="yoloPreset" class="setting-header">Detect</label>
+            <select id="yoloPreset" class="form-select">
+              <option value="all">All 80 COCO classes</option>
+              <option value="people">People only</option>
+              <option value="vehicles">Vehicles</option>
+              <option value="traffic">Traffic (people, vehicles, lights, signs)</option>
+              <option value="sports">Sports (players, ball, rackets, bats...)</option>
+              <option value="animals">Animals</option>
+            </select>
+          </div>
+          <div class="layer-list">
+            <div class="layer-row"><label class="layer-toggle"><input type="checkbox" id="yoloTrack" checked> Track objects (IDs + trails)</label></div>
+            <div class="layer-row"><label class="layer-toggle"><input type="checkbox" id="yoloLabels" checked> Show labels</label></div>
+          </div>
+          <div class="yolo-chips">
+            <button type="button" class="btn-sm btn-outline" id="yoloLineBtn">Draw counting line</button>
+            <button type="button" class="btn-sm btn-outline" id="yoloClearLineBtn">Clear line</button>
+          </div>
+
+          <button id="yoloStartBtn" class="btn btn-primary btn-block">
+            <span class="btn-spinner" id="yoloBtnSpinner" style="display: none;"></span>
+            <span id="yoloBtnText">Start</span>
+          </button>
+          <p class="fit-status" id="yoloStatus"></p>
+        </div>
+
+      </section>
+
+      <!-- Right Column: Results & Annotations -->
+      <section class="card results-card" id="resultsCard">
+        <div class="card-header">
+          <h2 id="resultsCardTitle">Recognition Results</h2>
+          <div class="result-actions" id="resultActions" style="display: none;">
+            <button class="btn-sm btn-outline" id="toggleViewBtn">View Original</button>
+            <a class="btn-sm btn-outline" id="downloadAnnotatedBtn" download="annotated_detection.jpg">Download</a>
+          </div>
+          <div class="result-actions" id="videoResultActions" style="display: none;">
+            <a class="btn-sm btn-outline" id="downloadVideoBtn" download="annotated_video.mp4">Download MP4</a>
+          </div>
+          <div class="result-actions" id="faceResultActions" style="display: none;">
+            <button class="btn-sm btn-outline" id="downloadFaceBtn">Download PNG</button>
+            <button class="btn-sm btn-outline" id="exportFaceVideoBtn" style="display: none;">Export Video</button>
+          </div>
+          <div class="result-actions" id="fitnessResultActions" style="display: none;">
+            <button class="btn-sm btn-outline" id="fitResetBtn">Reset Counts</button>
+          </div>
+          <div class="result-actions" id="gestureResultActions" style="display: none;">
+            <button class="btn-sm btn-outline" id="gestClearLogBtn">Clear History</button>
+          </div>
+          <div class="result-actions" id="shapesResultActions" style="display: none;">
+            <button class="btn-sm btn-outline" id="shapesShuffleBtn">Shuffle Shapes</button>
+          </div>
+          <div class="result-actions" id="particlesResultActions" style="display: none;">
+            <button class="btn-sm btn-outline" id="pcNextBtn">Next Shape</button>
+          </div>
+          <div class="result-actions" id="tmResultActions" style="display: none;">
+            <button class="btn-sm btn-outline" id="tmSnapshotBtn">Snapshot PNG</button>
+          </div>
+          <div class="result-actions" id="yoloResultActions" style="display: none;">
+            <button class="btn-sm btn-outline" id="yoloResetBtn">Reset Counts</button>
+            <button class="btn-sm btn-outline" id="yoloSnapshotBtn">Snapshot PNG</button>
+          </div>
+          <div class="result-actions" id="backgroundResultActions" style="display: none;">
+            <button class="btn-sm btn-outline" id="bgSnapshotBtn">Snapshot PNG</button>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              <line x1="11" y1="8" x2="11" y2="14"/>
+              <line x1="8" y1="11" x2="14" y2="11"/>
+            </svg>
+          </div>
+          <h3>No media analyzed yet</h3>
+          <p>Upload an image or YouTube/video link to detect objects, bounding boxes, and track occurrences across time.</p>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading-state" id="loadingState" style="display: none;">
+          <div class="pulsing-loader"></div>
+          <h3 id="loadingTitle">MediaPipe is analyzing image...</h3>
+          <p id="loadingSubtitle">Running object detection model locally</p>
+        </div>
+
+        <!-- Image Results Display -->
+        <div class="results-content" id="imageResultsContent" style="display: none;">
+          <!-- Metrics Bar -->
+          <div class="metrics-bar">
+            <div class="metric">
+              <span class="metric-label">Objects Found</span>
+              <span class="metric-val" id="metricCount">0</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Processing Time</span>
+              <span class="metric-val" id="metricTime">0 ms</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Image Resolution</span>
+              <span class="metric-val" id="metricRes">0 &times; 0</span>
+            </div>
+          </div>
+
+          <!-- Image Display Container -->
+          <div class="image-viewer-container">
+            <div class="image-frame">
+              <img id="annotatedImage" alt="Recognized objects with bounding boxes">
+              <img id="originalImage" alt="Original source" style="display: none;">
+            </div>
+          </div>
+
+          <!-- Detected Objects Breakdown List -->
+          <div class="detected-list-container">
+            <h3 class="list-title">Detected Classes</h3>
+            <div class="detected-grid" id="detectedItemsList"></div>
+          </div>
+
+          <!-- Raw JSON Details Accordion -->
+          <details class="json-details">
+            <summary>View Raw JSON Response</summary>
+            <pre><code id="jsonCode"></code></pre>
+          </details>
+        </div>
+
+        <!-- Video Results Display -->
+        <div class="results-content" id="videoResultsContent" style="display: none;">
+          <!-- Video Metrics Bar -->
+          <div class="metrics-bar">
+            <div class="metric">
+              <span class="metric-label">Source Title</span>
+              <span class="metric-val" id="videoMetricTitle" style="font-size: 0.85rem; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">Video</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Frames Rendered</span>
+              <span class="metric-val" id="videoMetricFrames">0</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Inference Speed</span>
+              <span class="metric-val" id="videoMetricFps">0 fps</span>
+            </div>
+          </div>
+
+          <!-- HTML5 Video Player -->
+          <div class="image-viewer-container">
+            <video id="resultVideoPlayer" controls autoplay loop playsinline style="max-width: 100%; max-height: 480px; width: 100%;">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+
+          <!-- Unique Objects Discovered -->
+          <div class="detected-list-container">
+            <h3 class="list-title">Objects Recognized in Video</h3>
+            <div class="detected-grid" id="videoUniqueList"></div>
+          </div>
+
+          <!-- Interactive Detection Timeline -->
+          <div class="timeline-container">
+            <h3 class="list-title">Occurrence Timeline (Click timestamp to seek)</h3>
+            <div class="timeline-list" id="timelineList"></div>
+          </div>
+        </div>
+
+        <!-- Face Mesh Results Display -->
+        <div class="results-content" id="faceResultsContent" style="display: none;">
+          <div class="metrics-bar">
+            <div class="metric">
+              <span class="metric-label" id="faceMetricCountLabel">Faces Found</span>
+              <span class="metric-val" id="faceMetricCount">0</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Landmarks / Face</span>
+              <span class="metric-val" id="faceMetricLandmarks">0</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label" id="faceMetricTimeLabel">Processing Time</span>
+              <span class="metric-val" id="faceMetricTime">0 ms</span>
+            </div>
+          </div>
+
+          <div class="image-viewer-container">
+            <div class="image-frame">
+              <canvas id="faceCanvas" class="face-canvas"></canvas>
+            </div>
+          </div>
+          <video id="faceVideo" playsinline muted preload="auto" style="display: none;"></video>
+
+          <div class="face-player" id="facePlayer" style="display: none;">
+            <button type="button" class="btn-sm btn-outline face-play-btn" id="facePlayBtn">Play</button>
+            <input type="range" id="faceSeek" class="slider" min="0" max="1000" value="0" step="1">
+            <span class="face-time" id="faceTime">00:00 / 00:00</span>
+          </div>
+
+          <div class="detected-list-container">
+            <h3 class="list-title">Detected Faces</h3>
+            <div class="detected-grid" id="faceList"></div>
+          </div>
+
+          <details class="json-details">
+            <summary>View Raw JSON Response</summary>
+            <pre><code id="faceJsonCode"></code></pre>
+          </details>
+        </div>
+
+        <!-- Fitness Coach (always shown on its tab) -->
+        <div class="results-content" id="fitnessResultsContent" data-has-results="true" style="display: none;">
+          <div class="coach-banner" id="fitCoach">Start the camera or load a video to begin.</div>
+
+          <div class="arm-grid">
+            <div class="arm-card arm-left">
+              <div class="arm-card-header">
+                <span class="arm-name">Left arm</span>
+                <span class="arm-phase" id="fitLeftPhase">waiting</span>
+              </div>
+              <div class="arm-count" id="fitLeftCount">0</div>
+              <div class="arm-angle-row">
+                <span>Elbow</span>
+                <span class="arm-angle" id="fitLeftAngle">–</span>
+              </div>
+              <div class="rom-track" title="Range of motion: left = straight, right = bent">
+                <div class="rom-fill" id="fitLeftRom"></div>
+              </div>
+            </div>
+            <div class="arm-card arm-right">
+              <div class="arm-card-header">
+                <span class="arm-name">Right arm</span>
+                <span class="arm-phase" id="fitRightPhase">waiting</span>
+              </div>
+              <div class="arm-count" id="fitRightCount">0</div>
+              <div class="arm-angle-row">
+                <span>Elbow</span>
+                <span class="arm-angle" id="fitRightAngle">–</span>
+              </div>
+              <div class="rom-track" title="Range of motion: left = straight, right = bent">
+                <div class="rom-fill" id="fitRightRom"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="image-viewer-container fit-viewer">
+            <canvas id="fitCanvas" class="face-canvas"></canvas>
+            <div class="fit-placeholder" id="fitPlaceholder">No camera or video running</div>
+          </div>
+          <video id="fitVideo" playsinline muted style="display: none;"></video>
+
+          <div class="face-player" id="fitPlayer" style="display: none;">
+            <button type="button" class="btn-sm btn-outline face-play-btn" id="fitPlayBtn">Pause</button>
+            <input type="range" id="fitSeek" class="slider" min="0" max="1000" value="0" step="1">
+            <span class="face-time" id="fitTime">00:00 / 00:00</span>
+          </div>
+
+          <div class="detected-list-container">
+            <h3 class="list-title">Rep Log</h3>
+            <div class="rep-log" id="fitLog"><span class="text-muted">No reps yet.</span></div>
+          </div>
+        </div>
+
+        <!-- Gestures (always shown on its tab) -->
+        <div class="results-content" id="gestureResultsContent" data-has-results="true" style="display: none;">
+          <div class="coach-banner" id="gestSummary">Start the camera and show your hands.</div>
+
+          <div class="arm-grid">
+            <div class="arm-card arm-left">
+              <div class="arm-card-header">
+                <span class="arm-name">Left hand</span>
+                <span class="arm-phase" id="gestLeftStatus">not detected</span>
+              </div>
+              <div class="gesture-main">
+                <span class="gesture-icon" id="gestLeftIcon">·</span>
+                <span class="gesture-name" id="gestLeftName">–</span>
+              </div>
+              <div class="arm-angle-row">
+                <span>Confidence</span>
+                <span class="arm-angle" id="gestLeftScore">–</span>
+              </div>
+              <div class="rom-track"><div class="rom-fill" id="gestLeftBar"></div></div>
+            </div>
+            <div class="arm-card arm-right">
+              <div class="arm-card-header">
+                <span class="arm-name">Right hand</span>
+                <span class="arm-phase" id="gestRightStatus">not detected</span>
+              </div>
+              <div class="gesture-main">
+                <span class="gesture-icon" id="gestRightIcon">·</span>
+                <span class="gesture-name" id="gestRightName">–</span>
+              </div>
+              <div class="arm-angle-row">
+                <span>Confidence</span>
+                <span class="arm-angle" id="gestRightScore">–</span>
+              </div>
+              <div class="rom-track"><div class="rom-fill" id="gestRightBar"></div></div>
+            </div>
+          </div>
+
+          <div class="image-viewer-container fit-viewer">
+            <canvas id="gestCanvas" class="face-canvas"></canvas>
+            <div class="fit-placeholder" id="gestPlaceholder">Camera is off</div>
+          </div>
+          <video id="gestVideo" playsinline muted style="display: none;"></video>
+
+          <div class="detected-list-container">
+            <h3 class="list-title">Gesture History</h3>
+            <div class="rep-log" id="gestLog"><span class="text-muted">No gestures yet.</span></div>
+          </div>
+        </div>
+
+        <!-- Background (always shown on its tab) -->
+        <div class="results-content" id="backgroundResultsContent" data-has-results="true" style="display: none;">
+          <div class="image-viewer-container fit-viewer bg-viewer">
+            <canvas id="bgCanvas" class="face-canvas"></canvas>
+            <div class="fit-placeholder" id="bgPlaceholder">Camera is off. Press Start Camera.</div>
+            <div class="bg-toast" id="bgToast"></div>
+            <div class="bg-badge" id="bgBadge">Original</div>
+          </div>
+          <video id="bgVideo" playsinline muted style="display: none;"></video>
+          <p class="fit-help" style="margin: 0;">Shortcuts work while this tab is open: <kbd>1</kbd>–<kbd>4</kbd> photos · <kbd>0</kbd> <kbd>R</kbd> <kbd>W</kbd> <kbd>Y</kbd> <kbd>G</kbd> colors · <kbd>B</kbd> blur (more with each press).</p>
+        </div>
+
+        <!-- Face Shapes (always shown on its tab) -->
+        <div class="results-content" id="shapesResultsContent" data-has-results="true" style="display: none;">
+          <div class="coach-banner" id="shapesSummary">Start the camera and look at it.</div>
+          <div class="image-viewer-container fit-viewer">
+            <canvas id="shapesCanvas" class="face-canvas"></canvas>
+            <div class="fit-placeholder" id="shapesPlaceholder">Camera is off</div>
+          </div>
+          <video id="shapesVideo" playsinline muted style="display: none;"></video>
+        </div>
+
+        <!-- Particles (always shown on its tab) -->
+        <div class="results-content" id="particlesResultsContent" data-has-results="true" style="display: none;">
+          <div class="image-viewer-container fit-viewer pc-viewer">
+            <canvas id="pcCanvas" class="face-canvas"></canvas>
+            <div class="fit-placeholder" id="pcPlaceholder">Camera is off. Press Start Camera.</div>
+            <div class="pc-hud">
+              <div class="pc-clock" id="pcClock">--:--:--</div>
+              <div class="pc-date" id="pcDate">----/--/--</div>
+              <div>Hand: <b id="pcHand" data-state="none">Not detected</b> <span id="pcGesture">-</span></div>
+              <div>Openness <b id="pcOpen">--</b><div class="pc-bar"><i id="pcOpenBar"></i></div></div>
+              <div>Distance <b id="pcDist">--</b><div class="pc-bar"><i id="pcDistBar"></i></div></div>
+              <div>Shape <b id="pcShape">Heart</b> &middot; Color <b id="pcColor">-</b></div>
+              <div class="pc-fps" id="pcFps"></div>
+            </div>
+          </div>
+          <video id="pcVideo" playsinline muted style="display: none;"></video>
+        </div>
+
+        <!-- My Model (always shown on its tab) -->
+        <div class="results-content" id="tmResultsContent" data-has-results="true" style="display: none;">
+          <div class="coach-banner tm-banner" id="tmBanner" data-state="unsure">Start the camera or upload a photo.</div>
+          <div class="image-viewer-container fit-viewer">
+            <canvas id="tmCanvas" class="face-canvas"></canvas>
+            <div class="fit-placeholder" id="tmPlaceholder">Camera is off</div>
+          </div>
+          <video id="tmVideo" playsinline muted style="display: none;"></video>
+          <div class="tm-bars" id="tmBars"></div>
+        </div>
+
+        <!-- YOLO Studio (always shown on its tab) -->
+        <div class="results-content" id="yoloResultsContent" data-has-results="true" style="display: none;">
+          <div class="coach-banner" id="yoloSummary">Pick a source and press Start.</div>
+          <div class="image-viewer-container fit-viewer">
+            <canvas id="yoloCanvas" class="face-canvas"></canvas>
+            <div class="fit-placeholder" id="yoloPlaceholder">No source running</div>
+          </div>
+          <div class="yolo-player" id="yoloPlayer" style="display: none;">
+            <button type="button" class="btn-sm btn-outline" id="yoloPlayBtn">⏸</button>
+            <input type="range" id="yoloSeek" min="0" max="1000" value="0">
+          </div>
+          <video id="yoloVideo" playsinline muted crossorigin="anonymous" style="display: none;"></video>
+          <div class="yolo-stats">
+            <div><span>Objects</span><b id="yoloNow">0</b></div>
+            <div><span>Inference</span><b id="yoloMs">-</b></div>
+            <div><span>Display FPS</span><b id="yoloFps">-</b></div>
+            <div><span>Line IN / OUT</span><b><span id="yoloLineIn">0</span> / <span id="yoloLineOut">0</span></b></div>
+            <div><span>Backend</span><b id="yoloBackend">-</b></div>
+          </div>
+          <div class="yolo-counts" id="yoloCounts"></div>
+        </div>
+
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <span>Local Object Recognition &bull; Google MediaPipe Tasks Vision &bull; Python &amp; Flask</span>
+      <span>Supports Images, Local Video &amp; YouTube Streams &bull; On-Device Inference</span>
+    </footer>
+  </div>
+
+  <script src="static/js/offline_api.js"></script>
+  <script src="static/js/main.js"></script>
+  <script src="static/js/facemesh.js"></script>
+  <script type="module" src="static/js/fitness.js"></script>
+  <script type="module" src="static/js/gestures.js"></script>
+  <script type="module" src="static/js/background.js"></script>
+  <script type="module" src="static/js/faceshapes.js"></script>
+  <script type="module" src="static/js/particles.js"></script>
+  <script src="static/vendor/tm/tf.min.js"></script>
+  <script src="static/vendor/tm/teachablemachine-image.min.js"></script>
+  <script src="static/js/tmclassify.js"></script>
+  <script src="static/vendor/ort/ort.webgpu.min.js"></script>
+  <script src="static/js/yolo.js"></script>
+</body>
+</html>
