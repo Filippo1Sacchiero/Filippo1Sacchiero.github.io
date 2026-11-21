@@ -8,7 +8,7 @@ name=Filippo Sacchiero
 
 title1=Student MDBM
 
-title2=Business Intelligence, Project Management - Mercedenz-Benz AG
+title2=Business Intelligence, Project Management - Mercedes-Benz AG
 
 expertise=Agentic AI, Digital Business and Digital Transformation
 
