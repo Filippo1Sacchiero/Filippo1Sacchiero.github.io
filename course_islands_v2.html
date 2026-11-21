@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pforzheim AI Course Islands</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<style>
+  :root {
+    --sky1: #ffcf9f; --sky2: #ffe6c7; --sky3: #f7d3bd;
+    --glass: rgba(255, 249, 240, 0.93); --border: rgba(255, 255, 255, 0.9);
+    --card: #fffdf9; --line: #efdccd;
+    --text: #3b2c24; --muted: #6f5a50; --accent: #b4532a; --accent-soft: #fbe3d2; --ok: #2f7d4f;
+    --shadow: 0 12px 30px rgba(120, 70, 30, 0.15);
+    --r-lg: 20px; --r-md: 12px; --r-sm: 8px;
+    --font: ui-rounded, "SF Pro Rounded", "Nunito", -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  body.low-stim {
+    --sky1: #f3f1ee; --sky2: #f3f1ee; --sky3: #e8e5e1;
+    --accent: #5b4a40; --accent-soft: #ece7e2; --shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: var(--font); color: var(--text); font-size: 15px; line-height: 1.5;
+    background: linear-gradient(180deg, var(--sky1), var(--sky2) 45%, var(--sky3));
+  }
+  button, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  #scene { position: fixed; inset: 0; display: block; width: 100%; height: 100%; }
+  .skip { position: absolute; left: 16px; top: -60px; z-index: 200; background: var(--text); color: #fff;
+          padding: 10px 16px; border-radius: var(--r-md); text-decoration: none; font-weight: 700; }
+  .skip:focus { top: 16px; }
+
+  /* Header */
+  header { position: fixed; top: 16px; left: 16px; right: 16px; z-index: 20; display: flex;
+           justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; pointer-events: none; }
+  header > * { pointer-events: auto; }
+  .brand, .pill { background: var(--glass); border: 1px solid var(--border); box-shadow: var(--shadow);
+                  border-radius: 999px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+  .brand { padding: 8px 18px; display: flex; align-items: baseline; gap: 10px; }
+  .brand h1 { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.01em; }
+  .brand small { font-size: 0.82rem; font-weight: 600; color: var(--muted); }
+  .controls { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pill { padding: 8px 14px; font-size: 0.85rem; font-weight: 700; }
+  .pill:hover { transform: translateY(-1px); }
+  .pill[aria-pressed="true"] { background: var(--accent); color: #fff; }
+
+  /* Floating island labels (HTML overlay, projected from 3D) */
+  #labels { position: fixed; inset: 0; pointer-events: none; z-index: 5; overflow: hidden; }
+  .island-label { position: absolute; left: 0; top: 0; pointer-events: auto; cursor: pointer; text-align: center;
+                  background: var(--glass); border: 2px solid var(--border); border-radius: var(--r-md);
+                  padding: 4px 12px; box-shadow: var(--shadow); white-space: nowrap; transition: background 0.2s; }
+  .island-label b { display: block; font-size: 0.88rem; }
+  .island-label span { font-size: 0.72rem; color: var(--muted); }
+  .island-label.explored b::after { content: " ✓"; color: var(--ok); }
+  .island-label.active { background: var(--accent); border-color: #fff; }
+  .island-label.active b, .island-label.active span, .island-label.active b::after { color: #fff; }
+
+  .hint { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 4; white-space: nowrap;
+          background: var(--glass); padding: 6px 16px; border-radius: 999px; font-size: 0.8rem; color: var(--muted); }
+
+  /* Side panel */
+  .panel { position: fixed; top: 76px; right: 16px; bottom: 16px; width: 420px; max-width: calc(100vw - 32px);
+           z-index: 30; padding: 22px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px;
+           background: var(--glass); border: 1px solid var(--border); border-radius: var(--r-lg); box-shadow: var(--shadow);
+           backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+           transform: translateX(calc(100% + 40px)); visibility: hidden;
+           transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), visibility 0s 0.45s; }
+  .panel.open { transform: none; visibility: visible; transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1); }
+  .panel-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .badge { display: inline-block; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.06em; color: var(--accent);
+           background: var(--accent-soft); padding: 3px 10px; border-radius: 999px; margin-bottom: 6px; }
+  .panel h2, .modal h2 { font-size: 1.3rem; line-height: 1.25; }
+  .close { width: 36px; height: 36px; border-radius: 50%; border: none; background: var(--accent-soft); flex-shrink: 0; }
+  .muted { color: var(--muted); font-size: 0.9rem; }
+  h3 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-bottom: 8px; }
+  .lesson { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-md); padding: 10px 12px; margin-bottom: 6px; }
+  .lesson b { display: block; font-size: 0.88rem; }
+  .lesson span { font-size: 0.8rem; color: var(--muted); }
+
+  /* Activity */
+  .activity { background: var(--card); border: 2px dashed #ecc7ad; border-radius: var(--r-lg); padding: 16px;
+              display: flex; flex-direction: column; gap: 8px; font-size: 0.86rem; }
+  .activity > b { font-size: 0.95rem; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .row { display: flex; gap: 6px; align-items: center; }
+  .row > span { flex: 1; }
+  .choice { width: 100%; text-align: left; padding: 8px 11px; border: 1.5px solid #e6d3c4; border-radius: var(--r-md);
+            background: #fff; font-size: 0.84rem; font-weight: 600; }
+  .choice:hover:not(:disabled) { border-color: var(--accent); }
+  .choice.sel { border-color: var(--accent); background: var(--accent-soft); }
+  .choice.good { border-color: var(--ok); background: #e6f4ea; color: #1f5a37; cursor: default; }
+  .mini { width: auto; padding: 4px 9px; }
+  .feedback { min-height: 1.2em; font-weight: 600; }
+  textarea, select { width: 100%; padding: 8px; border-radius: var(--r-sm); border: 1.5px solid #e6d3c4; background: #fff; }
+  .btn { padding: 11px; border: none; border-radius: var(--r-md); font-weight: 800; background: var(--accent); color: #fff; }
+  .btn.ghost { background: var(--accent-soft); color: var(--text); }
+  .btn:disabled { opacity: 0.65; cursor: default; }
+
+  /* List view modal */
+  .modal { position: fixed; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center;
+           padding: 16px; background: rgba(40, 25, 15, 0.45); }
+  .modal.open { display: flex; }
+  .modal-box { background: var(--card); border-radius: var(--r-lg); padding: 26px; width: 100%; max-width: 680px;
+               max-height: 88vh; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
+  .unit { border-bottom: 1px solid var(--line); padding-bottom: 14px; display: flex; flex-direction: column; gap: 6px; }
+  .unit h3 { font-size: 1rem; text-transform: none; letter-spacing: 0; color: var(--text); margin: 0; }
+  .unit ul { padding-left: 18px; font-size: 0.85rem; }
+  .unit .choice { width: auto; align-self: flex-start; }
+  .stamp { font-size: 0.75rem; font-weight: 800; padding: 2px 8px; border-radius: 999px; margin-left: 6px;
+           background: #eee8e2; color: var(--muted); }
+  .stamp.on { background: #e6f4ea; color: var(--ok); }
+
+  .toast { position: fixed; left: 50%; bottom: 24px; z-index: 150; transform: translate(-50%, 140px);
+           background: var(--text); color: #fff; padding: 10px 18px; border-radius: 999px; font-weight: 700;
+           transition: transform 0.3s; max-width: calc(100vw - 32px); text-align: center; }
+  .toast.show { transform: translate(-50%, 0); }
+
+  @media (max-width: 700px) {
+    .panel { top: auto; left: 0; right: 0; bottom: 0; width: 100%; max-width: none; max-height: 65vh;
+             border-radius: var(--r-lg) var(--r-lg) 0 0; transform: translateY(110%); }
+    .panel.open { transform: none; }
+    .hint { display: none; }
+    .brand h1 { font-size: 1rem; }
+    .island-label { padding: 3px 8px; }
+    .island-label span { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  body.low-stim * { transition: none !important; }
+</style>
+</head>
+<body>
+<a class="skip" href="#listModal" onclick="openList(); return false;">Skip 3D view: open text list</a>
+<canvas id="scene" role="img" aria-label="3D map of the six course islands. Use the List view button for a text version."></canvas>
+<div id="labels" aria-hidden="true"></div>
+
+<header>
+  <div class="brand"><h1>Pforzheim AI Course Islands</h1><small>by Filippo</small></div>
+  <div class="controls">
+    <button class="pill" id="lowStimBtn" aria-pressed="false">🍃 Low-stimulation</button>
+    <button class="pill" onclick="openList()">📋 List view</button>
+    <button class="pill" id="passportBtn" onclick="openList()">📘 Passport 0/6</button>
+  </div>
+</header>
+
+<div class="hint">Drag to rotate · scroll to zoom · click an island</div>
+
+<aside class="panel" id="panel" tabindex="-1" role="region" aria-labelledby="pTitle">
+  <div class="panel-head">
+    <div><span class="badge" id="pBadge"></span><h2 id="pTitle"></h2></div>
+    <button class="close" onclick="closePanel()" aria-label="Close island panel (Esc)">✕</button>
+  </div>
+  <p class="muted" id="pIntro"></p>
+  <section><h3>Lessons</h3><div id="pLessons"></div></section>
+  <section class="activity" id="pActivity" aria-live="polite"></section>
+  <button class="btn ghost" id="markBtn" onclick="markExplored(current)">🏅 Mark island as explored</button>
+</aside>
+
+<div class="modal" id="listModal" role="dialog" aria-modal="true" aria-labelledby="listTitle">
+  <div class="modal-box">
+    <div class="panel-head">
+      <h2 id="listTitle">All course units</h2>
+      <button class="close" id="listClose" onclick="closeList()" aria-label="Close list view (Esc)">✕</button>
+    </div>
+    <p class="muted" id="listSummary"></p>
+    <div id="listBody" style="display:flex;flex-direction:column;gap:14px;"></div>
+    <button class="btn ghost" onclick="resetProgress()">↺ Reset passport progress</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+    const COURSE_ISLANDS = [
+      {
+        id: 'A',
+        unitNumber: 1,
+        title: 'Getting Started with Perceptual AI',
+        pos: { x: -16, y: 1.2, z: 10 },
+        color: 0xffb5b0, // soft peach
+        landmark: 'cameraTower',
+        intro: 'Begin your perceptual AI journey at Pforzheim University. You will discover how machines process perceptual vision, configure your personal webpage, and train your very first recognition models without complex code.',
+        lessons: [
+          { title: '1.1 Build your own personal web page and course introduction', desc: 'Set up your portfolio web space and get acquainted with course goals, tools, and semester expectations.' },
+          { title: '1.2 Introduction to Google MediaPipe Tasks (perceptual AI)', desc: 'Explore lightweight on-device vision pipelines that bring perceptual intelligence straight into web browsers.' },
+          { title: '1.3 Train your own recognition model with Teachable Machine', desc: 'Capture webcam samples and train instant image and pose classifiers in an intuitive visual dashboard.' },
+          { title: '1.4 Image object recognition with Google Antigravity', desc: 'Run zero-setup object localization and boundary labeling on static photos and graphic assets.' },
+          { title: '1.5 Video object recognition with Google Antigravity', desc: 'Scale object recognition from still pictures to smooth real-time video stream feeds.' }
+        ],
+        activityType: 'matching'
+      },
+      {
+        id: 'B',
+        unitNumber: 2,
+        title: 'MediaPipe Vision Tasks',
+        pos: { x: -5, y: 3.0, z: 18 },
+        color: 0xa8e6cf, // soft mint
+        landmark: 'faceHill',
+        intro: 'Dive deep into real-time perceptual intelligence. Learn how computers track 468 facial points, full-body poses, hand gestures, and pixel-precise body contours with zero server latency.',
+        lessons: [
+          { title: '2.1 MediaPipe Face Landmark Detection', desc: 'Detect 468 3D facial coordinates to track expressions, eye gazes, and head orientations.' },
+          { title: '2.2 MediaPipe Video Face Landmark Detection', desc: 'Process live webcam video frames continuously with temporal smoothing and minimal jitter.' },
+          { title: '2.3 MediaPipe Pose Landmark Detection', desc: 'Track 33 full-body skeletal keypoints for sports form coaching, fitness apps, and ergonomics.' },
+          { title: '2.4 MediaPipe Gesture Recognition', desc: 'Recognize hand signs (thumbs up, victory, open palm) for touchless UI control.' },
+          { title: '2.5 MediaPipe Image Segmentation', desc: 'Separate foreground human subjects from background scenery for virtual background replacement.' },
+          { title: '2.6 MediaPipe Face Detection', desc: 'Fast, lightweight bounding-box face locator optimized for mobile devices and edge hardware.' }
+        ],
+        activityType: 'scenarioChoice'
+      },
+      {
+        id: 'C',
+        unitNumber: 3,
+        title: 'Real-Time Models and Creative AI',
+        pos: { x: 16, y: 1.0, z: 10 },
+        color: 0xc4d7f2, // soft sky blue
+        landmark: 'creativeStudio',
+        intro: 'Bridge computer vision with creative production. Explore real-time object detection with YOLO, artistic neural style transfer, and conversational AI integrations via Gemini API.',
+        lessons: [
+          { title: '3.1 Teachable Machine Real-Time Object Classifier', desc: 'Deploy an exported browser model for real-time inference on physical classroom objects.' },
+          { title: '3.2 YOLO', desc: 'Understand the You Only Look Once architecture for blazing-fast multi-object detection in crowded scenes.' },
+          { title: '3.3 Neural Style Transfer', desc: 'Synthesize artistic masterworks with modern photos by blending content and artistic style representations.' },
+          { title: '3.4 Simple Chat App Built with a Gemini API Key', desc: 'Connect a web interface to Google Gemini models to create interactive AI chat assistants.' }
+        ],
+        activityType: 'pipelineOrder'
+      },
+      {
+        id: 'D',
+        unitNumber: 4,
+        title: 'Gemini and Multimodal Workflows',
+        pos: { x: 16, y: 2.2, z: -11 },
+        color: 0xffd3b6, // soft apricot
+        landmark: 'geminiDiamond',
+        intro: 'Unleash multimodal reasoning across text, code, audio, and visual data. Learn how Gemini tools coordinate notebooks, interactive canvases, connectors, and scheduled background workers.',
+        lessons: [
+          { title: '4.1 Use a multimodal model to let Ollama recognize images', desc: 'Run open-weight multimodal vision models locally on your laptop using Ollama.' },
+          { title: '4.2 Gemini', desc: 'Master foundational multimodal prompting strategies and capabilities in modern LLMs.' },
+          { title: '4.3 Gemini Notebook', desc: 'Organize research references, analyze documents, and synthesize summaries in structured notes.' },
+          { title: '4.4 Gemini Canvas', desc: 'Collaborate visually on writing, code refactoring, and prototype ideation on an open workspace.' },
+          { title: '4.5 Gemini Skills', desc: 'Extend model capabilities with custom reusable instructions and specialized domain competencies.' },
+          { title: '4.6 Gemini Connectors', desc: 'Bridge Gemini to external services, workspace documents, APIs, and cloud databases.' },
+          { title: '4.7 Gemini Scheduled Tasks', desc: 'Automate periodic summaries, alert triggers, and recurring background intelligence workflows.' },
+          { title: '4.8 Gemini Multi-Agent Skills', desc: 'Orchestrate specialized sub-agents working together to resolve complex multidisciplinary tasks.' }
+        ],
+        activityType: 'helperBuilder'
+      },
+      {
+        id: 'E',
+        unitNumber: 5,
+        title: 'AI Agents',
+        pos: { x: -2, y: 0.5, z: -19 },
+        color: 0xd8d3f8, // soft lavender
+        landmark: 'agentRobot',
+        intro: 'Move beyond simple question-and-answer prompts to autonomous agents. Understand tool use, code execution loops, coworker delegation, and multi-step problem solving.',
+        lessons: [
+          { title: '5.1 n8n', desc: 'Design automated node-based logic flows connecting webhooks, databases, and AI endpoints.' },
+          { title: '5.2 OpenAI Agent (Codex, Work)', desc: 'Examine autonomous code generation, sandbox execution, and iterative debugging agents.' },
+          { title: '5.3 Claude Agent (Code, Cowork)', desc: 'Explore agentic workflows for software architecture, file editing, and long-context collaboration.' },
+          { title: '5.4 OpenClaw', desc: 'Study open-source agentic frameworks that connect LLMs to computer actions and browsers.' },
+          { title: '5.5 Hermes Agent', desc: 'Investigate flexible open agent architectures optimized for specialized function calling.' }
+        ],
+        activityType: 'agentSorting'
+      },
+      {
+        id: 'F',
+        unitNumber: 6,
+        title: 'The Next Wave of AI Tools',
+        pos: { x: -18, y: -0.5, z: -8 },
+        color: 0xfed2d9, // soft rose
+        landmark: 'futureBeacon',
+        intro: 'Peer into emerging industry tools shaping the future of design, engineering, and enterprise productivity. Evaluate new paradigms critically and prepare for your semester capstone.',
+        lessons: [
+          { title: '6.1 Meta Muse', desc: 'Explore in class: Emerging creative synthesis and multimodal ideation environment.' },
+          { title: '6.2 Manus Cue!', desc: 'Explore in class: Context-aware interactive automation and workflow accelerator.' },
+          { title: '6.3 Hark Pro', desc: 'Explore in class: Advanced voice and auditory intelligence processing suite.' },
+          { title: '6.4 OpenAI Dots', desc: 'Explore in class: Visual collaboration and conceptual intelligence mapping interface.' },
+          { title: '6.5 Claude Duet', desc: 'Explore in class: Pair-programming and co-creative reasoning companion.' },
+          { title: '6.6 Grok Bots', desc: 'Explore in class: Real-time query synthesis and conversational data exploration agents.' }
+        ],
+        activityType: 'toolExplorer'
+      }
+    ];
+
+/* ============ ACTIVITIES (one small task per unit, keyed by activityType) ============ */
+const ACTIVITIES = {
+  matching: { title: '🎯 Match the tool to the task', pairs: [
+    ['Teachable Machine', 'Quick no-code webcam model training'],
+    ['Google Antigravity', 'Object recognition on photos and video'],
+    ['MediaPipe Tasks', 'On-device real-time perceptual vision']] },
+  scenarioChoice: { title: '💡 Which task would you use?',
+    q: 'A student wants to switch presentation slides touch-free, using only a webcam. Which MediaPipe task fits best?',
+    options: ['Gesture Recognition', 'Image Segmentation', 'Face Detection'], answer: 0,
+    why: 'Gesture Recognition detects hand signs like an open palm or thumbs up.' },
+  pipelineOrder: { title: '🔄 Put the real-time pipeline in order',
+    steps: ['Camera input', 'Preprocess the frame', 'Model inference', 'Draw the output overlay'], start: [2, 0, 3, 1] },
+  helperBuilder: { title: '🛠️ Design your own Gemini helper',
+    options: ['Gemini Notebook', 'Gemini Canvas', 'Gemini Skills', 'Gemini Connectors', 'Gemini Scheduled Tasks'] },
+  agentSorting: { title: '🤖 Agent or chatbot?', items: [
+    ['Reads a repo, writes a missing test, runs it and opens a pull request', true],
+    ['Answers a question about the lecture dates', false],
+    ['Watches a folder, renames new files and emails a weekly summary', true]] },
+  toolExplorer: { title: '🔍 Plan a trial for class' }
+};
+
+/* ============ STATE & STORAGE ============ */
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* storage unavailable: keep going */ } }
+};
+const KEY = 'pforzheim_islands_v2';
+const explored = new Set(store.get(KEY + '_explored', []).filter(id => COURSE_ISLANDS.some(d => d.id === id)));
+let current = null;
+let lowStim = false;
+let has3D = false;
+const $ = id => document.getElementById(id);
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+
+/* ============ THREE.JS SCENE ============ */
+const RING = 19;                       // islands sit on a ring of this radius
+let renderer, scene, camera, controls, ocean, boat, clouds, clock, camAnim = null;
+const islands = [];
+const boatState = { target: null, heading: 0 };
+const raycaster = window.THREE ? new THREE.Raycaster() : null;
+const wave = (x, z, t) => Math.sin(x * 0.15 + t * 0.8) * 0.12 + Math.cos(z * 0.18 + t * 0.6) * 0.1;
+const mat = (color, extra) => new THREE.MeshStandardMaterial(Object.assign({ color, roughness: 0.7, flatShading: true }, extra));
+function mesh(geo, color, x = 0, y = 0, z = 0) { const m = new THREE.Mesh(geo, mat(color)); m.position.set(x, y, z); return m; }
+
+function init3D() {
+  if (!window.THREE || !THREE.OrbitControls) return false;
+  try {
+    renderer = new THREE.WebGLRenderer({ canvas: $('scene'), antialias: true, alpha: true });
+  } catch (e) { return false; }
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  scene = new THREE.Scene();
+  scene.fog = new THREE.Fog(0xf7d3bd, 55, 140);
+  camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.5, 400);
+  camera.position.set(0, 34, 44);
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
+  Object.assign(controls, { enableDamping: true, dampingFactor: 0.07, minDistance: 12, maxDistance: 85,
+                            maxPolarAngle: Math.PI / 2.2, enablePan: false });
+
+  // Golden-hour lighting: warm low sun, soft sky/sea fill
+  scene.add(new THREE.HemisphereLight(0xfff1dc, 0x7fb9b0, 0.6));
+  scene.add(new THREE.AmbientLight(0xffe2c4, 0.22));
+  const sun = new THREE.DirectionalLight(0xffc489, 1.0);
+  sun.position.set(-32, 24, 20);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(1024, 1024);
+  Object.assign(sun.shadow.camera, { left: -35, right: 35, top: 35, bottom: -35, near: 1, far: 120 });
+  sun.shadow.bias = -0.0008;
+  scene.add(sun);
+
+  // Calm low-poly sea
+  const seaGeo = new THREE.PlaneGeometry(320, 320, 60, 60);
+  seaGeo.rotateX(-Math.PI / 2);
+  ocean = new THREE.Mesh(seaGeo, mat(0x7cc6c0, { roughness: 0.55 }));
+  ocean.receiveShadow = true;
+  scene.add(ocean);
+
+  COURSE_ISLANDS.forEach(buildIsland);
+  boat = buildBoat();
+  scene.add(boat);
+  buildClouds();
+  clock = new THREE.Clock();
+
+  // Click (not drag) to open, hover to highlight
+  const cvs = renderer.domElement;
+  let down = null;
+  cvs.addEventListener('pointerdown', e => { down = { x: e.clientX, y: e.clientY }; });
+  cvs.addEventListener('pointerup', e => {
+    if (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 6) return;
+    const i = pick(e); if (i !== -1) openIsland(i);
+  });
+  cvs.addEventListener('pointermove', e => {
+    const i = pick(e);
+    cvs.style.cursor = i === -1 ? 'grab' : 'pointer';
+    islands.forEach((isl, k) => { isl.halo.material.opacity = k === current ? 0.9 : (k === i ? 0.5 : 0); });
+  });
+  addEventListener('resize', () => {
+    camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth, innerHeight);
+  });
+  return true;
+}
+
+function pick(e) {
+  const p = new THREE.Vector2((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+  raycaster.setFromCamera(p, camera);
+  const hit = raycaster.intersectObjects(islands.map(i => i.hitbox))[0];
+  return hit ? hit.object.userData.index : -1;
+}
+
+/* Small landmark per unit */
+function buildLandmark(type, c) {
+  const g = new THREE.Group(), white = 0xfff8ee, dark = 0x5a4a44, gold = 0xf2b544;
+  if (type === 'cameraTower') {          // camera on a tripod
+    g.add(mesh(new THREE.CylinderGeometry(0.08, 0.14, 1.4, 6), dark, 0, 0.7, 0),
+          mesh(new THREE.BoxGeometry(0.9, 0.65, 0.65), white, 0, 1.6, 0),
+          mesh(new THREE.CylinderGeometry(0.22, 0.25, 0.4, 10).rotateX(Math.PI / 2), dark, 0, 1.6, 0.45),
+          mesh(new THREE.BoxGeometry(0.25, 0.15, 0.3), c, -0.2, 2.0, 0));
+  } else if (type === 'faceHill') {      // smiling face hill (face landmarks)
+    const hill = mesh(new THREE.SphereGeometry(1, 10, 8), c, 0, 0.7, 0); hill.scale.set(1.2, 1, 1.2);
+    g.add(hill, mesh(new THREE.SphereGeometry(0.12, 6, 6), dark, -0.35, 0.95, 1.0),
+          mesh(new THREE.SphereGeometry(0.12, 6, 6), dark, 0.35, 0.95, 1.0),
+          mesh(new THREE.TorusGeometry(0.2, 0.05, 5, 10, Math.PI).rotateZ(Math.PI), dark, 0, 0.7, 1.08));
+  } else if (type === 'creativeStudio') { // studio hut + easel
+    const roof = mesh(new THREE.ConeGeometry(1.05, 0.8, 4), c, 0, 1.3, 0); roof.rotation.y = Math.PI / 4;
+    g.add(mesh(new THREE.BoxGeometry(1.2, 0.9, 1.2), white, 0, 0.45, 0), roof,
+          mesh(new THREE.BoxGeometry(0.7, 0.55, 0.06), 0xe8684a, 1.05, 0.7, 0.5),
+          mesh(new THREE.DodecahedronGeometry(0.28), gold, -0.9, 0.5, 0.6));
+  } else if (type === 'geminiDiamond') {  // twin crystals with orbit
+    const ring = mesh(new THREE.TorusGeometry(1.1, 0.05, 5, 28), gold, 0, 1.3, 0); ring.rotation.x = Math.PI / 3;
+    g.add(mesh(new THREE.OctahedronGeometry(0.7), c, -0.35, 1.25, 0), mesh(new THREE.OctahedronGeometry(0.55), white, 0.4, 1.45, 0.2), ring);
+  } else if (type === 'agentRobot') {     // friendly agent robot
+    g.add(mesh(new THREE.CylinderGeometry(0.45, 0.55, 0.9, 8), white, 0, 0.45, 0),
+          mesh(new THREE.SphereGeometry(0.48, 10, 8), c, 0, 1.25, 0),
+          mesh(new THREE.BoxGeometry(0.5, 0.18, 0.12), dark, 0, 1.28, 0.44),
+          mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.45, 5), dark, 0, 1.85, 0),
+          mesh(new THREE.SphereGeometry(0.12, 6, 6), gold, 0, 2.1, 0));
+  } else {                                // future beacon
+    g.add(mesh(new THREE.CylinderGeometry(0.8, 1.0, 0.45, 8), white, 0, 0.22, 0),
+          mesh(new THREE.TorusGeometry(0.75, 0.08, 6, 24), c, 0, 1.1, 0),
+          mesh(new THREE.ConeGeometry(0.15, 1.3, 6), dark, 0, 1.1, 0),
+          mesh(new THREE.SphereGeometry(0.2, 8, 6), gold, 0, 1.1, 0));
+  }
+  return g;
+}
+
+function buildIsland(d, index) {
+  const a = index * Math.PI / 3;
+  const pos = new THREE.Vector3(Math.sin(a) * RING, 0, Math.cos(a) * RING);
+  const g = new THREE.Group();
+  g.position.copy(pos);
+  const accent = new THREE.Color(d.color).offsetHSL(0, 0.25, -0.2);
+  const surface = r => 0.25 + 0.975 * Math.sqrt(Math.max(0, 1 - (r / 3.9) ** 2)); // dome height at radius r
+
+  g.add(mesh(new THREE.CylinderGeometry(4.6, 5.0, 0.6, 14), 0xf3d7a4, 0, 0, 0));       // sandy beach
+  const dome = mesh(new THREE.SphereGeometry(3.9, 16, 6, 0, Math.PI * 2, 0, Math.PI / 2), d.color, 0, 0.25, 0);
+  dome.scale.y = 0.25;                                                                    // flattened grassy top
+  g.add(dome);
+  const lm = buildLandmark(d.landmark, d.color); lm.position.y = 1.1; lm.rotation.y = a; g.add(lm);
+  for (let t = 0; t < 4; t++) {                                                           // little pine trees
+    const ta = t * Math.PI / 2 + index + 0.6, tx = Math.sin(ta) * 2.6, tz = Math.cos(ta) * 2.6, h = surface(2.6);
+    g.add(mesh(new THREE.CylinderGeometry(0.09, 0.12, 0.5, 5), 0xa9784f, tx, h + 0.15, tz),
+          mesh(new THREE.ConeGeometry(0.5, 1.1, 6), 0x8dbb72, tx, h + 0.85, tz));
+  }
+
+  // Flag (raised when explored) — placed on the side facing the sea centre
+  const flag = new THREE.Group();
+  const fa = a + Math.PI + 0.9;
+  flag.position.set(Math.sin(fa) * 2.4, surface(2.4), Math.cos(fa) * 2.4);
+  const cloth = new THREE.Mesh(new THREE.PlaneGeometry(0.95, 0.58), new THREE.MeshStandardMaterial({ color: accent, side: THREE.DoubleSide }));
+  cloth.geometry.translate(0.47, 0, 0);
+  cloth.position.y = 1.95;
+  flag.add(mesh(new THREE.CylinderGeometry(0.05, 0.05, 2.3, 5), 0xfff8ee, 0, 1.15, 0), cloth);
+  flag.visible = false;
+  g.add(flag);
+
+  // Grey-tint bookkeeping: remember each material's real colour
+  const mats = new Set();
+  g.traverse(o => { if (o.isMesh) { o.castShadow = o.receiveShadow = true; mats.add(o.material); } });
+  flag.traverse(o => o.isMesh && mats.delete(o.material));
+  mats.forEach(m => { m.userData.base = m.color.clone(); });
+
+  const halo = new THREE.Mesh(new THREE.RingGeometry(5.3, 5.8, 40).rotateX(-Math.PI / 2),
+                              new THREE.MeshBasicMaterial({ color: 0xfff4e0, transparent: true, opacity: 0 }));
+  halo.position.y = 0.3; g.add(halo);
+  const hitbox = new THREE.Mesh(new THREE.SphereGeometry(5.5, 8, 6), new THREE.MeshBasicMaterial({ visible: false }));
+  hitbox.userData.index = index; g.add(hitbox);
+  scene.add(g);
+
+  const label = el('div', 'island-label');
+  label.append(el('b', null, `Island ${d.id} · Unit ${d.unitNumber}`), el('span', null, d.title));
+  label.addEventListener('click', () => openIsland(index));
+  $('labels').append(label);
+
+  const isl = { d, g, pos, mats, flag, cloth, halo, hitbox, label, flagT: null,
+                dock: pos.clone().multiplyScalar((RING - 6.6) / RING) };   // boat docks on the inner side
+  islands.push(isl);
+  paintIsland(index, false);
+}
+
+function buildBoat() {
+  const b = new THREE.Group(), inner = new THREE.Group();
+  inner.rotation.y = -Math.PI / 2;          // model is built facing +X; this makes it face +Z
+  const hullShape = new THREE.Shape();
+  hullShape.moveTo(-0.75, 0); hullShape.lineTo(0.55, 0); hullShape.lineTo(1.0, 0.4); hullShape.lineTo(-0.95, 0.4); hullShape.closePath();
+  const hull = new THREE.Mesh(new THREE.ExtrudeGeometry(hullShape, { depth: 0.7, bevelEnabled: false }).translate(0, -0.1, -0.35), mat(0xc8553d));
+  const sailShape = new THREE.Shape();
+  sailShape.moveTo(0.12, 0.45); sailShape.lineTo(0.12, 1.9); sailShape.lineTo(0.95, 0.5); sailShape.closePath();
+  const sail = new THREE.Mesh(new THREE.ShapeGeometry(sailShape), mat(0xfff6e8, { side: THREE.DoubleSide }));
+  inner.add(hull, mesh(new THREE.BoxGeometry(1.8, 0.06, 0.66), 0xf1d3a6, 0, 0.3, 0),
+            mesh(new THREE.CylinderGeometry(0.04, 0.05, 1.7, 6), 0x7a5a44, 0.06, 1.1, 0), sail);
+  b.add(inner);
+  b.traverse(o => { if (o.isMesh) o.castShadow = true; });
+  b.scale.setScalar(1.15);
+  return b;
+}
+
+function buildClouds() {
+  clouds = new THREE.Group();
+  const m = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, flatShading: true, transparent: true, opacity: 0.9 });
+  for (let i = 0; i < 6; i++) {
+    const c = new THREE.Group(), a = i * Math.PI / 3 + 0.5, r = 30 + (i % 3) * 6;
+    for (let k = 0; k < 3; k++) {
+      const puff = new THREE.Mesh(new THREE.DodecahedronGeometry(1.4 + k * 0.3), m);
+      puff.position.set(k * 1.5 - 1.5, (k % 2) * 0.4, 0); c.add(puff);
+    }
+    c.position.set(Math.sin(a) * r, 13 + (i % 2) * 3, Math.cos(a) * r);
+    clouds.add(c);
+  }
+  scene.add(clouds);
+}
+
+/* ============ PASSPORT ============ */
+function paintIsland(i, animate) {
+  const isl = islands[i];
+  if (!isl) return;
+  const on = explored.has(isl.d.id);
+  isl.mats.forEach(m => {
+    const b = m.userData.base, l = b.r * 0.3 + b.g * 0.59 + b.b * 0.11;
+    m.color.copy(b);
+    if (!on) m.color.lerp(new THREE.Color(l * 0.8 + 0.15, l * 0.8 + 0.15, l * 0.8 + 0.15), 0.7);
+  });
+  isl.flag.visible = on;
+  isl.flag.scale.y = on && animate && !lowStim ? 0.01 : 1;
+  isl.flagT = on && animate && !lowStim ? 0 : null;
+  isl.label.classList.toggle('explored', on);
+}
+
+function updatePassport() {
+  const n = explored.size;
+  $('passportBtn').textContent = `📘 Passport ${n}/6`;
+  $('passportBtn').setAttribute('aria-label', `Passport: ${n} of 6 islands explored. Open list view`);
+  if (current !== null) {
+    const on = explored.has(COURSE_ISLANDS[current].id);
+    $('markBtn').disabled = on;
+    $('markBtn').textContent = on ? '✓ Island explored' : '🏅 Mark island as explored';
+  }
+  if ($('listModal').classList.contains('open')) renderList();
+}
+
+function markExplored(i) {
+  if (i === null || explored.has(COURSE_ISLANDS[i].id)) return;
+  explored.add(COURSE_ISLANDS[i].id);
+  store.set(KEY + '_explored', [...explored]);
+  paintIsland(i, true);
+  updatePassport();
+  toast(explored.size === 6 ? '🎉 Passport complete! All 6 islands explored.' : `🏅 Stamp collected! Island ${COURSE_ISLANDS[i].id} explored.`);
+}
+
+function resetProgress() {
+  explored.clear();
+  store.set(KEY + '_explored', []);
+  islands.forEach((_, i) => paintIsland(i, false));
+  updatePassport();
+  if (current !== null) renderPanel(current);
+  toast('Passport reset.');
+}
+
+let toastTimer;
+function toast(msg) {
+  const t = $('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+/* ============ NAVIGATION ============ */
+const OVERVIEW = window.THREE ? { pos: new THREE.Vector3(0, 34, 44), target: new THREE.Vector3(0, 0, 0) } : null;
+
+function flyTo(pos, target) {
+  if (!has3D) return;
+  if (lowStim) { camera.position.copy(pos); controls.target.copy(target); camAnim = null; return; }
+  camAnim = { p0: camera.position.clone(), t0: controls.target.clone(), p1: pos, t1: target, start: performance.now() };
+}
+
+function openIsland(i) {
+  current = i;
+  renderPanel(i);
+  const panel = $('panel');
+  panel.classList.add('open');
+  panel.focus({ preventScroll: true });
+  if (!has3D) return;
+  islands.forEach((isl, k) => { isl.label.classList.toggle('active', k === i); isl.halo.material.opacity = k === i ? 0.9 : 0; });
+
+  // Camera looks outward from the inner sea, shifted so the panel doesn't cover the island
+  const isl = islands[i], mobile = innerWidth <= 700;
+  const dir = isl.pos.clone().normalize();
+  const right = new THREE.Vector3(-dir.z, 0, dir.x);
+  const shift = mobile ? 0 : 4;
+  const camPos = isl.pos.clone().addScaledVector(dir, -15).addScaledVector(right, shift).setY(10);
+  const target = isl.pos.clone().addScaledVector(right, shift).setY(mobile ? -2.5 : 1);
+  flyTo(camPos, target);
+
+  boatState.target = isl.dock.clone();
+  if (lowStim) snapBoat();
+}
+
+function closePanel() {
+  if (current === null) return;
+  current = null;
+  $('panel').classList.remove('open');
+  islands.forEach(isl => { isl.label.classList.remove('active'); isl.halo.material.opacity = 0; });
+  flyTo(OVERVIEW.pos.clone(), OVERVIEW.target.clone());
+}
+
+function snapBoat() {
+  if (!boatState.target) return;
+  const dx = boatState.target.x - boat.position.x, dz = boatState.target.z - boat.position.z;
+  if (Math.hypot(dx, dz) > 0.01) boatState.heading = Math.atan2(dx, dz);
+  boat.position.set(boatState.target.x, 0, boatState.target.z);
+  boat.rotation.set(0, boatState.heading, 0);
+}
+
+/* ============ PANEL & ACTIVITIES ============ */
+function renderPanel(i) {
+  const d = COURSE_ISLANDS[i];
+  $('pBadge').textContent = `ISLAND ${d.id} · UNIT ${d.unitNumber}`;
+  $('pTitle').textContent = d.title;
+  $('pIntro').textContent = d.intro;
+  $('pLessons').replaceChildren(...d.lessons.map(l => {
+    const c = el('div', 'lesson'); c.append(el('b', null, l.title), el('span', null, l.desc)); return c;
+  }));
+  renderActivity(i);
+  updatePassport();
+}
+
+function renderActivity(i) {
+  const d = COURSE_ISLANDS[i], a = ACTIVITIES[d.activityType], box = $('pActivity');
+  const fb = el('p', 'feedback');
+  const say = msg => { fb.textContent = msg; };
+  const solved = msg => { say('🎉 ' + msg); markExplored(i); };
+  const btn = (text, fn, cls = 'choice') => { const b = el('button', cls, text); b.onclick = () => fn(b); return b; };
+  box.replaceChildren(el('b', null, a.title));
+
+  if (d.activityType === 'matching') {
+    box.append(el('p', 'muted', 'Pick a tool, then the task it does best.'));
+    let sel = null, done = 0;
+    const tools = a.pairs.map((p, k) => btn(p[0], b => {
+      if (b.classList.contains('good')) return;
+      tools.forEach(t => t.classList.remove('sel')); b.classList.add('sel'); sel = k;
+    }));
+    const tasks = [2, 0, 1].map(k => btn(a.pairs[k][1], b => {
+      if (b.classList.contains('good')) return;
+      if (sel === null) return say('Pick a tool on the left first.');
+      if (sel !== k) return say('❌ Not quite. Try another pair.');
+      b.classList.add('good'); tools[k].classList.replace('sel', 'good'); sel = null;
+      ++done === 3 ? solved('All tools matched!') : say('✅ Match! Next pair.');
+    }));
+    const grid = el('div', 'grid2');
+    tools.forEach((t, k) => grid.append(t, tasks[k]));
+    box.append(grid);
+
+  } else if (d.activityType === 'scenarioChoice') {
+    box.append(el('p', null, a.q));
+    a.options.forEach((o, k) => box.append(btn(o, b => {
+      box.querySelectorAll('.choice').forEach(c => c.classList.remove('sel', 'good'));
+      if (k === a.answer) { b.classList.add('good'); solved('Correct! ' + a.why); }
+      else { b.classList.add('sel'); say('💡 Not quite. Think about which task reads hand signs.'); }
+    })));
+
+  } else if (d.activityType === 'pipelineOrder') {
+    const order = a.start.slice(), list = el('div');
+    const draw = () => list.replaceChildren(...order.map((s, k) => {
+      const r = el('div', 'row lesson'); r.append(el('span', null, `${k + 1}. ${a.steps[s]}`));
+      [['▲', -1], ['▼', 1]].forEach(([sym, dir]) => {
+        const m = btn(sym, () => { const j = k + dir; [order[k], order[j]] = [order[j], order[k]]; draw(); }, 'choice mini');
+        m.disabled = (k + dir < 0 || k + dir >= order.length);
+        m.setAttribute('aria-label', `Move "${a.steps[s]}" ${dir < 0 ? 'up' : 'down'}`);
+        r.append(m);
+      });
+      return r;
+    }));
+    draw();
+    box.append(list, btn('Check order', () => order.every((s, k) => s === k)
+      ? solved('Input → preprocess → inference → overlay.')
+      : say('💡 Frames must enter, get prepared, go through the model, then be drawn.'), 'btn'));
+
+  } else if (d.activityType === 'helperBuilder') {
+    box.append(el('p', 'muted', 'Tick the Gemini features your study helper should combine:'));
+    const checks = a.options.map(o => {
+      const l = el('label', 'row'), c = el('input'); c.type = 'checkbox';
+      l.append(c, el('span', null, o)); box.append(l); return c;
+    });
+    box.append(btn('✨ Assemble my helper', () => {
+      const picked = a.options.filter((_, k) => checks[k].checked);
+      picked.length ? solved('Your helper combines ' + picked.join(' + ') + '.') : say('Tick at least one feature.');
+    }, 'btn'));
+
+  } else if (d.activityType === 'agentSorting') {
+    box.append(el('p', 'muted', 'Sort each task: autonomous agent or chatbot?'));
+    const answers = a.items.map(() => null);
+    a.items.forEach(([text, isAgent], k) => {
+      const card = el('div', 'lesson'), row = el('div', 'grid2');
+      card.append(el('b', null, text), row);
+      [['Agent', true], ['Chatbot', false]].forEach(([lab, val]) => row.append(btn(lab, b => {
+        row.querySelectorAll('.choice').forEach(c => c.classList.remove('sel', 'good'));
+        answers[k] = val === isAgent;
+        b.classList.add(answers[k] ? 'good' : 'sel');
+        if (!answers[k]) return say('💡 Agents take multi-step actions with tools; chatbots mainly reply.');
+        answers.every(Boolean) ? solved('All tasks sorted correctly!') : say(`✅ Right! ${answers.filter(Boolean).length}/${a.items.length} sorted.`);
+      })));
+      box.append(card);
+    });
+
+  } else {
+    box.append(el('p', 'muted', 'Pick one tool and write what you would try first in class.'));
+    const sel = el('select'), txt = el('textarea');
+    sel.setAttribute('aria-label', 'Tool to try');
+    d.lessons.forEach(l => { const o = el('option', null, l.title.replace(/^\d+\.\d+\s*/, '')); sel.append(o); });
+    txt.rows = 3; txt.placeholder = 'e.g. Use it to sketch three ideas for our studio brief…';
+    txt.setAttribute('aria-label', 'Your trial idea');
+    txt.value = store.get(KEY + '_idea', '');
+    box.append(sel, txt, btn('💾 Save trial idea', () => {
+      const v = txt.value.trim();
+      if (!v) return say('Write a short idea first.');
+      store.set(KEY + '_idea', v);
+      solved(`Saved: try ${sel.value} in class.`);
+    }, 'btn'));
+  }
+  box.append(fb);
+}
+
+/* ============ TEXT LIST VIEW ============ */
+let listOpener = null;
+function renderList() {
+  const n = explored.size;
+  $('listSummary').textContent = n === 6 ? '🎉 Passport complete — you explored all 6 islands!' : `Passport: ${n}/6 islands explored.`;
+  $('listBody').replaceChildren(...COURSE_ISLANDS.map((d, i) => {
+    const u = el('div', 'unit'), h = el('h3', null, `Island ${d.id} · Unit ${d.unitNumber}: ${d.title}`);
+    const on = explored.has(d.id);
+    h.append(el('span', 'stamp' + (on ? ' on' : ''), on ? '✓ explored' : 'not yet'));
+    const ul = el('ul');
+    d.lessons.forEach(l => { const li = el('li'); li.append(el('b', null, l.title + ': '), l.desc); ul.append(li); });
+    const go = el('button', 'choice', `Open Island ${d.id} →`);
+    go.onclick = () => { closeList(); openIsland(i); };
+    u.append(h, el('p', 'muted', d.intro), ul, go);
+    return u;
+  }));
+}
+function openList() {
+  listOpener = document.activeElement;
+  renderList();
+  $('listModal').classList.add('open');
+  $('listClose').focus();
+}
+function closeList() {
+  $('listModal').classList.remove('open');
+  if (listOpener && listOpener.focus) listOpener.focus();
+}
+
+/* ============ LOW-STIMULATION MODE ============ */
+function setLowStim(on) {
+  lowStim = on;
+  document.body.classList.toggle('low-stim', on);
+  $('lowStimBtn').setAttribute('aria-pressed', String(on));
+  store.set(KEY + '_lowstim', on);
+  if (!has3D) return;
+  scene.fog.color.set(on ? 0xe8e5e1 : 0xf7d3bd);
+  if (on) {
+    camAnim = null; snapBoat();
+    const p = ocean.geometry.attributes.position;
+    for (let k = 0; k < p.count; k++) p.setY(k, 0);
+    p.needsUpdate = true;
+    islands.forEach(isl => { isl.flag.scale.y = 1; isl.flagT = null; isl.cloth.rotation.y = 0; });
+  }
+}
+$('lowStimBtn').addEventListener('click', () => setLowStim(!lowStim));
+
+addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if ($('listModal').classList.contains('open')) closeList(); else closePanel();
+});
+
+/* ============ RENDER LOOP ============ */
+const tmp = window.THREE ? new THREE.Vector3() : null;
+function loop() {
+  requestAnimationFrame(loop);
+  const dt = Math.min(clock.getDelta(), 0.1), t = clock.elapsedTime;
+
+  if (!lowStim) {
+    const p = ocean.geometry.attributes.position;
+    for (let k = 0; k < p.count; k++) p.setY(k, wave(p.getX(k), p.getZ(k), t));
+    p.needsUpdate = true;
+    clouds.rotation.y += dt * 0.01;
+    islands.forEach((isl, k) => { isl.cloth.rotation.y = Math.sin(t * 2.5 + k) * 0.25; });
+  }
+  islands.forEach(isl => {                                  // flag raising
+    if (isl.flagT === null) return;
+    isl.flagT = Math.min(1, isl.flagT + dt / 0.9);
+    isl.flag.scale.y = 1 - (1 - isl.flagT) ** 3;
+    if (isl.flagT === 1) isl.flagT = null;
+  });
+
+  if (camAnim) {                                            // camera flight
+    const k = Math.min(1, (performance.now() - camAnim.start) / 1100), e = k < 0.5 ? 4 * k ** 3 : 1 - (-2 * k + 2) ** 3 / 2;
+    camera.position.lerpVectors(camAnim.p0, camAnim.p1, e);
+    controls.target.lerpVectors(camAnim.t0, camAnim.t1, e);
+    if (k === 1) camAnim = null;
+  }
+
+  if (boatState.target && !lowStim) {                       // boat: constant speed, faces travel direction, bobs
+    const dx = boatState.target.x - boat.position.x, dz = boatState.target.z - boat.position.z, dist = Math.hypot(dx, dz);
+    if (dist > 0.02) {
+      const step = Math.min(dist, 5 * dt);
+      boat.position.x += dx / dist * step; boat.position.z += dz / dist * step;
+      let diff = Math.atan2(dx, dz) - boatState.heading;
+      diff = Math.atan2(Math.sin(diff), Math.cos(diff));
+      boatState.heading += diff * Math.min(1, dt * 4);
+    }
+    boat.position.y = wave(boat.position.x, boat.position.z, t) + 0.05;
+    boat.rotation.set(Math.sin(t * 1.1) * 0.03, boatState.heading, Math.sin(t * 1.4) * 0.05);
+  }
+
+  controls.update();
+  renderer.render(scene, camera);
+
+  islands.forEach(isl => {                                  // project HTML labels
+    tmp.copy(isl.pos).setY(4.4).project(camera);
+    const vis = tmp.z < 1;
+    isl.label.style.display = vis ? '' : 'none';
+    if (vis) isl.label.style.transform =
+      `translate(${(tmp.x + 1) / 2 * innerWidth}px, ${(1 - tmp.y) / 2 * innerHeight}px) translate(-50%, -100%)`;
+  });
+}
+
+/* ============ STARTUP ============ */
+has3D = init3D();
+setLowStim(store.get(KEY + '_lowstim', matchMedia('(prefers-reduced-motion: reduce)').matches));
+updatePassport();
+if (has3D) loop();
+else { document.querySelector('.hint').textContent = '3D view unavailable — showing the text list.'; openList(); }
+</script>
+</body>
+</html>
