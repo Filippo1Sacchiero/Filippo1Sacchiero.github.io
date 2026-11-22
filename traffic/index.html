@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CCTV Traffic Studio</title>
+<meta name="description" content="Live CCTV traffic counting, speed estimation and density heatmap with YOLO26n running in the browser.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0f17; --panel: #121826; --panel-2: #0f1521; --line: #222b3d; --text: #e7ecf6; --muted: #8b95ab;
+    --blue: #3b82f6; --cyan: #22d3ee; --green: #34d399; --amber: #fbbf24; --violet: #a78bfa; --red: #f87171;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 Inter, system-ui, sans-serif; }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+  .top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 14px 20px; border-bottom: 1px solid var(--line); background: var(--panel-2); }
+  .logo { width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg, var(--blue), var(--cyan)); display: grid; place-items: center; font-size: 15px; }
+  .top h1 { margin: 0; font-size: 1.15rem; letter-spacing: -.01em; }
+  .badge { font: 600 .72rem 'JetBrains Mono', monospace; color: var(--cyan); border: 1px solid #1e4a5a; background: #0d2430; padding: 3px 8px; border-radius: 999px; }
+  .links { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+  .links a { color: var(--text); text-decoration: none; font-size: .82rem; padding: 6px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+  .links a:hover { border-color: var(--blue); }
+  .layout { display: grid; grid-template-columns: 320px 1fr; gap: 16px; padding: 16px 20px 32px; max-width: 1500px; margin: 0 auto; }
+  @media (max-width: 960px) { .layout { grid-template-columns: 1fr; padding: 12px 16px 24px; } }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+  .side .card + .card { margin-top: 14px; }
+  .card h2 { margin: 0 0 12px; font-size: .92rem; display: flex; align-items: center; gap: 8px; }
+  .card h2 .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); margin-left: auto; }
+  .card h2 .dot.live { background: var(--red); box-shadow: 0 0 0 4px rgba(248,113,113,.15); }
+  label.lbl { display: block; color: var(--muted); font-size: .78rem; margin: 10px 0 6px; }
+  input[type=text], select { width: 100%; font: 500 .82rem 'JetBrains Mono', monospace; padding: 9px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-2); color: var(--text); }
+  .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 9px; padding: 3px; }
+  .seg button { border: 0; background: none; color: var(--muted); padding: 7px 4px; border-radius: 6px; font: 500 .8rem Inter, sans-serif; cursor: pointer; }
+  .seg button.on { background: var(--line); color: var(--text); }
+  .preset { display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 6px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-2); color: var(--text); font: 500 .8rem Inter, sans-serif; cursor: pointer; text-align: left; }
+  .preset small { margin-left: auto; color: var(--muted); font-weight: 600; }
+  .preset.on { border-color: #1d4ed8; }
+  .preset.on small { color: var(--blue); }
+  .go { width: 100%; margin-top: 14px; padding: 11px; border: 0; border-radius: 9px; background: linear-gradient(90deg, #2563eb, #0ea5e9); color: #fff; font: 600 .92rem Inter, sans-serif; cursor: pointer; }
+  .go.stop { background: #3a1d24; color: var(--red); border: 1px solid #5b2730; }
+  .go:disabled { opacity: .55; cursor: default; }
+  .status { margin-top: 10px; color: var(--muted); font-size: .78rem; min-height: 1.2em; }
+  .slider { margin-top: 12px; }
+  .slider .row { display: flex; justify-content: space-between; color: var(--muted); font-size: .8rem; margin-bottom: 6px; }
+  .slider .row b { font: 600 .8rem 'JetBrains Mono', monospace; color: var(--cyan); }
+  .slider .row b.red { color: var(--red); }
+  input[type=range] { width: 100%; accent-color: var(--blue); }
+  .check { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; color: var(--muted); font-size: .82rem; }
+  .check input { width: 17px; height: 17px; accent-color: var(--blue); }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  @media (max-width: 720px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+  .kpi { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+  .kpi .k { color: var(--muted); font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+  .kpi .v { font: 600 2rem 'JetBrains Mono', monospace; margin: 6px 0 2px; line-height: 1.1; }
+  .kpi .v small { font-size: .85rem; color: var(--muted); margin-left: 4px; }
+  .kpi .s { color: var(--muted); font-size: .75rem; }
+  .classes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .chip { font-size: .78rem; padding: 4px 10px; border-radius: 999px; background: var(--panel); border: 1px solid var(--line); color: var(--muted); }
+  .chip b { color: var(--text); margin-left: 4px; font-family: 'JetBrains Mono', monospace; }
+  .viewer { margin-top: 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .vbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  .pill { font: 600 .74rem 'JetBrains Mono', monospace; padding: 5px 9px; border-radius: 6px; background: var(--panel-2); border: 1px solid var(--line); }
+  .pill.live::before { content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--muted); margin-right: 6px; vertical-align: 1px; }
+  .pill.live.on::before { background: var(--red); }
+  .pill span { color: var(--cyan); }
+  .vbar .sp { flex: 1; }
+  .tool { font: 600 .76rem Inter, sans-serif; color: var(--text); padding: 6px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel-2); cursor: pointer; }
+  .tool:hover { border-color: var(--blue); }
+  .stage { position: relative; background: #000; aspect-ratio: 16/9; display: grid; place-items: center; }
+  .stage canvas { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .stage:fullscreen { aspect-ratio: auto; }
+  .placeholder { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; color: var(--muted); padding: 20px; }
+  .log { margin-top: 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: .8rem; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 600; font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; }
+  td.mono { font-size: .78rem; }
+  .in { color: var(--green); } .out { color: var(--amber); }
+  .note { color: var(--muted); font-size: .76rem; margin-top: 10px; }
+  video { display: none; }
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="logo">🚦</div>
+  <h1>CCTV Traffic Intelligence Studio</h1>
+  <span class="badge">YOLO26n + Tracking</span>
+  <nav class="links">
+    <a href="../media_pipe/#yolo">⚡ General YOLO Studio</a>
+    <a href="../style_transfer/">🎨 Style Transfer</a>
+    <a href="../">🏠 Home</a>
+  </nav>
+</div>
+
+<div class="layout">
+  <aside class="side">
+    <div class="card">
+      <h2>📹 CCTV Feed Source <i class="dot" id="liveDot"></i></h2>
+      <div class="seg" id="srcSeg">
+        <button data-src="cctv" class="on">Live CCTV</button>
+        <button data-src="file">Video file</button>
+        <button data-src="webcam">Webcam</button>
+      </div>
+      <div id="cctvPanel">
+        <label class="lbl" for="camUrl">Live camera URL</label>
+        <input type="text" id="camUrl" value="https://cctv.klcg.gov.tw/facd4662" spellcheck="false">
+        <label class="lbl">Keelung City presets</label>
+        <button class="preset on" data-url="https://cctv.klcg.gov.tw/facd4662">🚦 基隆市交通路口 (facd4662)<small>Active</small></button>
+        <button class="preset" data-url="https://cctv.klcg.gov.tw/41b0eff2">🛣️ 基隆港周邊主要幹道 (41b0eff2)<small>Switch</small></button>
+      </div>
+      <div id="filePanel" hidden>
+        <label class="lbl" for="fileIn">Traffic video (MP4 / WebM / MOV)</label>
+        <input type="file" id="fileIn" accept="video/*">
+      </div>
+      <button class="go" id="goBtn">🚀 Connect / Switch Feed</button>
+      <div class="status" id="status"></div>
+    </div>
+
+    <div class="card">
+      <h2>📐 Counting Line &amp; Geometry</h2>
+      <div class="slider">
+        <div class="row">Counting line position (Y-axis) <b id="lineVal">0.55</b></div>
+        <input type="range" id="lineY" min="0.1" max="0.9" step="0.01" value="0.55">
+      </div>
+      <div class="slider">
+        <div class="row">Perspective scale (meters / pixel) <b id="scaleVal">0.06 m</b></div>
+        <input type="range" id="mpp" min="0.01" max="0.2" step="0.005" value="0.06">
+      </div>
+      <div class="slider">
+        <div class="row">Speed limit warning (km/h) <b class="red" id="limitVal">60 km/h</b></div>
+        <input type="range" id="limit" min="10" max="120" step="5" value="60">
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🔥 Traffic Density Heatmap</h2>
+      <div class="check">Enable heatmap overlay <input type="checkbox" id="heatOn" checked></div>
+      <div class="slider">
+        <div class="row">Heatmap opacity <b id="heatVal">70%</b></div>
+        <input type="range" id="heatOp" min="10" max="100" step="5" value="70">
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🎯 Detection</h2>
+      <div class="slider">
+        <div class="row">Confidence threshold <b id="confVal">30%</b></div>
+        <input type="range" id="conf" min="10" max="90" step="5" value="30">
+      </div>
+      <div class="check">Show labels &amp; speed <input type="checkbox" id="labelsOn" checked></div>
+      <div class="check">Show tracking trails <input type="checkbox" id="trailsOn" checked></div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="kpis">
+      <div class="kpi"><div class="k">Total vehicles counted</div><div class="v" id="kTotal" style="color:var(--cyan)">0</div><div class="s">Cumulative traffic volume</div></div>
+      <div class="kpi"><div class="k">Inflow / Down (南向/進城)</div><div class="v" id="kIn" style="color:var(--green)">0</div><div class="s">Crossed line downwards</div></div>
+      <div class="kpi"><div class="k">Outflow / Up (北向/出城)</div><div class="v" id="kOut" style="color:var(--amber)">0</div><div class="s">Crossed line upwards</div></div>
+      <div class="kpi"><div class="k">Average road speed</div><div class="v" id="kSpeed" style="color:var(--violet)">–<small>km/h</small></div><div class="s">Active moving vehicles</div></div>
+    </div>
+    <div class="classes" id="classes"></div>
+
+    <div class="viewer">
+      <div class="vbar">
+        <span class="pill live" id="livePill">IDLE</span>
+        <span class="pill">ACTIVE: <span id="pActive">0</span></span>
+        <span class="pill">FPS: <span id="pFps">0</span></span>
+        <span class="pill">INFER: <span id="pMs">–</span></span>
+        <span class="sp"></span>
+        <button class="tool" id="snapBtn">📸 Snapshot</button>
+        <button class="tool" id="csvBtn">📊 Export CSV</button>
+        <button class="tool" id="resetBtn">↺ Reset counts</button>
+        <button class="tool" id="fsBtn">⛶ Fullscreen</button>
+      </div>
+      <div class="stage" id="stage">
+        <canvas id="view" width="1280" height="720"></canvas>
+        <div class="placeholder" id="placeholder">Choose a source and press <b>&nbsp;Connect / Switch Feed</b></div>
+      </div>
+    </div>
+
+    <div class="card log">
+      <h2>🧾 Line-crossing log <span style="margin-left:auto;color:var(--muted);font-weight:500;font-size:.78rem">latest 12</span></h2>
+      <table>
+        <thead><tr><th>Time</th><th>ID</th><th>Class</th><th>Direction</th><th>Speed</th></tr></thead>
+        <tbody id="logBody"><tr><td colspan="5" style="color:var(--muted)">No vehicle has crossed the line yet.</td></tr></tbody>
+      </table>
+      <p class="note">Detection runs entirely in your browser (YOLO26n, ONNX Runtime Web). Speeds are estimates: they depend on the perspective scale, which is one value for the whole image, so vehicles far from the camera are less accurate. The Keelung camera sends about 1 frame per second.</p>
+    </div>
+  </main>
+</div>
+<video id="video" muted playsinline loop></video>
+
+<script src="vendor/ort/ort.webgpu.min.js"></script>
+<script src="traffic_core.js"></script>
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const SIZE = 640;
+  const VEH = TrafficCore.VEHICLES;
+  const COLORS = { car: '#22d3ee', motorcycle: '#a78bfa', bus: '#34d399', truck: '#fbbf24', bicycle: '#f472b6' };
+  const SHORT = { car: 'Car', motorcycle: 'Moto', bus: 'Bus', truck: 'Truck', bicycle: 'Bike' };
+
+  const canvas = $('view'), ctx = canvas.getContext('2d');
+  const video = $('video');
+  const prep = document.createElement('canvas'); prep.width = prep.height = SIZE;
+  const pctx = prep.getContext('2d', { willReadFrequently: true });
+  const heatCanvas = document.createElement('canvas');
+
+  const counter = new TrafficCore.TrafficCounter({ lineY: 0.55, mPerPx: 0.06, speedLimit: 60 });
+  heatCanvas.width = counter.heatW; heatCanvas.height = counter.heatH;
+
+  let session = null, labels = [];
+  let src = 'cctv', running = false, mode = null, mjpeg = null, stream = null;
+  let inferBusy = false, lastFrameKey = null, lastMs = 0, startDate = new Date();
+  let renderN = 0, renderT = performance.now();
+
+  // ---------- controls ----------
+  document.querySelectorAll('#srcSeg button').forEach((b) => b.onclick = () => {
+    src = b.dataset.src;
+    document.querySelectorAll('#srcSeg button').forEach((x) => x.classList.toggle('on', x === b));
+    $('cctvPanel').hidden = src !== 'cctv';
+    $('filePanel').hidden = src !== 'file';
+    $('goBtn').textContent = src === 'cctv' ? '🚀 Connect / Switch Feed' : src === 'file' ? '▶ Analyze video' : '🎥 Start webcam';
+  });
+  document.querySelectorAll('.preset').forEach((b) => b.onclick = () => {
+    $('camUrl').value = b.dataset.url;
+    document.querySelectorAll('.preset').forEach((x) => { x.classList.toggle('on', x === b); x.querySelector('small').textContent = x === b ? 'Active' : 'Switch'; });
+    if (running && mode === 'cctv') start();
+  });
+  const bind = (id, out, fmt, apply) => { const el = $(id); const f = () => { $(out).textContent = fmt(+el.value); apply(+el.value); }; el.oninput = f; f(); };
+  bind('lineY', 'lineVal', (v) => v.toFixed(2), (v) => { counter.lineY = v; });
+  bind('mpp', 'scaleVal', (v) => v.toFixed(3).replace(/0$/, '') + ' m', (v) => { counter.mPerPx = v; });
+  bind('limit', 'limitVal', (v) => v + ' km/h', (v) => { counter.speedLimit = v; });
+  bind('heatOp', 'heatVal', (v) => v + '%', () => {});
+  bind('conf', 'confVal', (v) => v + '%', () => {});
+  $('goBtn').onclick = () => (running ? stop() : start());
+  $('fileIn').onchange = () => { if ($('fileIn').files[0]) start(); };
+  $('resetBtn').onclick = () => { counter.reset(); startDate = new Date(); updatePanels(); };
+  $('snapBtn').onclick = () => download(canvas.toDataURL('image/png'), `traffic-snapshot-${stamp()}.png`);
+  $('csvBtn').onclick = () => download(URL.createObjectURL(new Blob([counter.csv(startDate)], { type: 'text/csv' })), `traffic-counts-${stamp()}.csv`);
+  $('fsBtn').onclick = () => (document.fullscreenElement ? document.exitFullscreen() : $('stage').requestFullscreen?.());
+  const stamp = () => new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+  function download(href, name) { const a = document.createElement('a'); a.href = href; a.download = name; a.click(); }
+  const setStatus = (t) => { $('status').textContent = t; };
+
+  // ---------- model ----------
+  async function getSession() {
+    if (session) return session;
+    setStatus('Loading YOLO26n model (9.5 MB)...');
+    ort.env.wasm.wasmPaths = new URL('vendor/ort/', location.href).href;
+    ort.env.wasm.numThreads = self.crossOriginIsolated ? Math.min(4, navigator.hardwareConcurrency || 2) : 1;
+    labels = await (await fetch('yolo26n_labels.json')).json();
+    for (const ep of (navigator.gpu ? ['webgpu', 'wasm'] : ['wasm'])) {
+      try { session = await ort.InferenceSession.create('models/yolo26n.onnx', { executionProviders: [ep], graphOptimizationLevel: 'all' }); break; }
+      catch (e) { console.warn('ONNX Runtime', ep, 'failed', e); }
+    }
+    if (!session) throw new Error('Could not start ONNX Runtime in this browser.');
+    return session;
+  }
+
+  // ---------- sources ----------
+  function current() {
+    if (mode === 'cctv') return mjpeg?.frame ? { img: mjpeg.frame, w: mjpeg.frame.width, h: mjpeg.frame.height, t: mjpeg.frameT, key: mjpeg.frames } : null;
+    if (!video.videoWidth) return null;
+    const t = mode === 'file' ? video.currentTime : performance.now() / 1000;
+    return { img: video, w: video.videoWidth, h: video.videoHeight, t, key: mode === 'file' ? video.currentTime : t };
+  }
+
+  function openMjpeg(url) {
+    const st = { frame: null, frameT: 0, frames: 0, abort: new AbortController(), error: null };
+    async function show(bytes) {
+      const bmp = await createImageBitmap(new Blob([bytes], { type: 'image/jpeg' }));
+      const old = st.frame;
+      st.frame = bmp; st.frameT = performance.now() / 1000; st.frames++;
+      if (old) setTimeout(() => old.close(), 1500);
+    }
+    (async () => {
+      const res = await fetch(url, { signal: st.abort.signal, cache: 'no-store' });
+      if (!res.ok) throw new Error(`Camera returned HTTP ${res.status}`);
+      if ((res.headers.get('Content-Type') || '').startsWith('image/')) {
+        await show(new Uint8Array(await res.arrayBuffer()));
+        while (!st.abort.signal.aborted) {
+          await new Promise((r) => setTimeout(r, 1000));
+          const r2 = await fetch(url, { signal: st.abort.signal, cache: 'no-store' });
+          await show(new Uint8Array(await r2.arrayBuffer()));
+        }
+        return;
+      }
+      const reader = res.body.getReader();
+      let buf = new Uint8Array(0), decoding = false;
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done) throw new Error('The camera stream ended.');
+        const m = new Uint8Array(buf.length + value.length); m.set(buf); m.set(value, buf.length); buf = m;
+        for (;;) {
+          let s = -1, e = -1;
+          for (let i = 0; i < buf.length - 1; i++) if (buf[i] === 0xff && buf[i + 1] === 0xd8) { s = i; break; }
+          if (s < 0) { buf = buf.slice(Math.max(0, buf.length - 1)); break; }
+          for (let i = s + 2; i < buf.length - 1; i++) if (buf[i] === 0xff && buf[i + 1] === 0xd9) { e = i + 2; break; }
+          if (e < 0) { buf = buf.slice(s); break; }
+          const jpg = buf.slice(s, e); buf = buf.slice(e);
+          if (!decoding) { decoding = true; show(jpg).catch(() => {}).finally(() => { decoding = false; }); }
+        }
+        if (buf.length > 8e6) buf = new Uint8Array(0);
+      }
+    })().catch((err) => { if (!st.abort.signal.aborted) { st.error = err; setStatus('Camera error: ' + (err.message || err)); } });
+    st.close = () => { st.abort.abort(); st.frame?.close?.(); };
+    return st;
+  }
+
+  async function start() {
+    stop(true);
+    counter.reset(); startDate = new Date(); updatePanels();
+    $('goBtn').disabled = true;
+    try {
+      await getSession();
+      if (src === 'cctv') {
+        const url = $('camUrl').value.trim();
+        if (!/^https?:\/\//.test(url)) throw new Error('Enter a camera URL starting with http(s)://');
+        setStatus('Connecting to the camera...');
+        mjpeg = openMjpeg(url);
+        const t0 = performance.now();
+        while (!mjpeg.frame && !mjpeg.error && performance.now() - t0 < 20000) await new Promise((r) => setTimeout(r, 100));
+        if (!mjpeg.frame) throw mjpeg.error || new Error('No image from the camera within 20 s.');
+        setStatus('Live CCTV connected. Vehicles are counted when they cross the yellow line.');
+      } else if (src === 'file') {
+        const f = $('fileIn').files[0];
+        if (!f) { $('fileIn').click(); throw new Error('Choose a video file first.'); }
+        video.srcObject = null; video.src = URL.createObjectURL(f);
+        await video.play();
+        setStatus('▶ ' + f.name);
+      } else {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1280 } }, audio: false });
+        video.srcObject = stream; await video.play();
+        setStatus('Webcam running.');
+      }
+      mode = src; running = true;
+      $('placeholder').hidden = true;
+      $('livePill').classList.add('on');
+      $('livePill').textContent = mode === 'cctv' ? 'LIVE CCTV' : mode === 'file' ? 'VIDEO FILE' : 'WEBCAM';
+      $('liveDot').classList.add('live');
+      $('goBtn').textContent = '■ Stop'; $('goBtn').classList.add('stop');
+      requestAnimationFrame(render);
+      inferLoop();
+    } catch (err) {
+      stop(true);
+      setStatus('Error: ' + (err.message || err));
+    } finally { $('goBtn').disabled = false; }
+  }
+
+  function stop(silent) {
+    running = false;
+    mjpeg?.close(); mjpeg = null;
+    stream?.getTracks().forEach((t) => t.stop()); stream = null;
+    video.pause();
+    $('livePill').classList.remove('on'); $('livePill').textContent = 'IDLE';
+    $('liveDot').classList.remove('live');
+    $('goBtn').classList.remove('stop');
+    document.querySelector('#srcSeg button.on').click();
+    if (!silent) setStatus('Stopped. Counts are kept until you reset or connect again.');
+  }
+
+  // ---------- inference ----------
+  async function inferLoop() {
+    if (!running) return;
+    const cur = current();
+    if (cur && cur.key !== lastFrameKey && !inferBusy) {
+      inferBusy = true; lastFrameKey = cur.key;
+      try { counter.update(await detect(cur), cur.t, cur.w, cur.h); updatePanels(); }
+      catch (e) { console.error(e); setStatus('Inference error: ' + (e.message || e)); }
+      inferBusy = false;
+    }
+    setTimeout(inferLoop, 15);
+  }
+
+  async function detect({ img, w, h }) {
+    const r = Math.min(SIZE / w, SIZE / h), nw = Math.round(w * r), nh = Math.round(h * r);
+    const px = (SIZE - nw) / 2, py = (SIZE - nh) / 2;
+    pctx.fillStyle = 'rgb(114,114,114)'; pctx.fillRect(0, 0, SIZE, SIZE);
+    pctx.drawImage(img, px, py, nw, nh);
+    const { data } = pctx.getImageData(0, 0, SIZE, SIZE);
+    const area = SIZE * SIZE, input = new Float32Array(3 * area);
+    for (let i = 0, j = 0; i < area; i++, j += 4) { input[i] = data[j] / 255; input[i + area] = data[j + 1] / 255; input[i + 2 * area] = data[j + 2] / 255; }
+    const t0 = performance.now();
+    const out = await session.run({ images: new ort.Tensor('float32', input, [1, 3, SIZE, SIZE]) });
+    lastMs = performance.now() - t0;
+    const o = out.output0.data; // [1, 300, 6]: x1, y1, x2, y2, score, class
+    const minConf = +$('conf').value / 100, dets = [];
+    for (let k = 0; k < o.length; k += 6) {
+      if (o[k + 4] < minConf) continue;
+      const name = labels[Math.round(o[k + 5])];
+      if (!VEH.includes(name)) continue;
+      dets.push({ name, score: o[k + 4], box: [Math.max(0, (o[k] - px) / r), Math.max(0, (o[k + 1] - py) / r), Math.min(w, (o[k + 2] - px) / r), Math.min(h, (o[k + 3] - py) / r)] });
+    }
+    return dets;
+  }
+
+  // ---------- drawing ----------
+  function render() {
+    if (!running) return;
+    const cur = current();
+    if (cur) {
+      if (canvas.width !== cur.w || canvas.height !== cur.h) { canvas.width = cur.w; canvas.height = cur.h; }
+      ctx.drawImage(cur.img, 0, 0, cur.w, cur.h);
+      drawOverlay(cur.w, cur.h);
+    }
+    renderN++;
+    const now = performance.now();
+    if (now - renderT > 1000) {
+      const fps = mode === 'cctv' && mjpeg ? (mjpeg.frames - (render.lastFrames || 0)) * 1000 / (now - renderT) : renderN * 1000 / (now - renderT);
+      render.lastFrames = mjpeg?.frames || 0;
+      $('pFps').textContent = fps.toFixed(1); renderN = 0; renderT = now;
+    }
+    requestAnimationFrame(render);
+  }
+
+  function drawOverlay(W, H) {
+    const lw = Math.max(2, W / 450), font = Math.max(11, Math.round(W / 75));
+    // heatmap
+    if ($('heatOn').checked && counter.heatMax > 0) {
+      heatCanvas.getContext('2d').putImageData(new ImageData(counter.heatPixels(), counter.heatW, counter.heatH), 0, 0);
+      ctx.save(); ctx.globalAlpha = +$('heatOp').value / 100; ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+      ctx.filter = `blur(${Math.round(W / 120)}px)`;
+      ctx.drawImage(heatCanvas, 0, 0, W, H); ctx.restore();
+    }
+    // counting line
+    const L = counter.lineY * H;
+    ctx.strokeStyle = '#facc15'; ctx.lineWidth = lw * 1.5;
+    ctx.beginPath(); ctx.moveTo(0, L); ctx.lineTo(W, L); ctx.stroke();
+    ctx.font = `700 ${font}px 'JetBrains Mono', monospace`; ctx.textBaseline = 'bottom'; ctx.fillStyle = '#facc15';
+    ctx.fillText(`COUNTING LINE (Y=${counter.lineY.toFixed(2)}) [IN: ${counter.inflow} | OUT: ${counter.outflow}]`, 10, L - 4);
+    // tracks
+    ctx.textBaseline = 'top';
+    for (const tr of counter.tracks) {
+      if (!tr.seen) continue;
+      const col = counter.isSpeeding(tr) ? '#ef4444' : (COLORS[tr.name] || '#fff');
+      if ($('trailsOn').checked && tr.trail.length > 1) {
+        ctx.strokeStyle = col; ctx.globalAlpha = 0.75; ctx.lineWidth = lw;
+        ctx.beginPath(); tr.trail.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y))); ctx.stroke(); ctx.globalAlpha = 1;
+      }
+      const [x1, y1, x2, y2] = tr.box;
+      ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+      if ($('labelsOn').checked) {
+        const sp = tr.speed == null ? '…' : `${tr.speed.toFixed(1)} km/h`;
+        const text = `#${tr.id} ${tr.name} | ${sp}${counter.isSpeeding(tr) ? ' ⚠' : ''}`;
+        ctx.font = `600 ${font}px Inter, sans-serif`;
+        const tw = ctx.measureText(text).width + 8, th = font + 6, ty = y1 - th < 0 ? y1 : y1 - th;
+        ctx.fillStyle = 'rgba(10,14,22,.82)'; ctx.fillRect(x1, ty, tw, th);
+        ctx.fillStyle = col; ctx.fillText(text, x1 + 4, ty + 3);
+      }
+    }
+    // HUD
+    const c = counter.byClass, avg = counter.avgSpeed();
+    const hud = `CCTV TRAFFIC | Total: ${counter.total} (Car: ${c.car || 0}, Moto: ${c.motorcycle || 0}, Bus: ${c.bus || 0}, Truck: ${c.truck || 0}) | Avg Speed: ${avg == null ? '–' : avg.toFixed(1)} km/h`;
+    ctx.font = `600 ${font}px Inter, sans-serif`;
+    ctx.fillStyle = 'rgba(10,14,22,.75)'; ctx.fillRect(0, 0, W, font + 14);
+    ctx.fillStyle = '#e7ecf6'; ctx.textBaseline = 'top'; ctx.fillText(hud, 10, 7);
+  }
+
+  // ---------- panels ----------
+  function updatePanels() {
+    $('kTotal').textContent = counter.total;
+    $('kIn').textContent = counter.inflow;
+    $('kOut').textContent = counter.outflow;
+    const avg = counter.avgSpeed();
+    $('kSpeed').innerHTML = `${avg == null ? '–' : avg.toFixed(1)}<small>km/h</small>`;
+    $('pActive').textContent = counter.active().length;
+    $('pMs').textContent = lastMs ? `${Math.round(lastMs)} ms` : '–';
+    $('classes').innerHTML = VEH.map((k) => `<span class="chip" style="border-color:${COLORS[k]}55">${SHORT[k]}<b>${counter.byClass[k] || 0}</b></span>`).join('');
+    const ev = counter.events.slice(-12).reverse();
+    $('logBody').innerHTML = ev.length ? ev.map((e) => {
+      const time = new Date(startDate.getTime() + (e.t - counter.startT) * 1000).toLocaleTimeString();
+      return `<tr><td class="mono">${time}</td><td class="mono">#${e.id}</td><td>${e.name}</td><td class="${e.dir}">${e.dir === 'in' ? '↓ Inflow' : '↑ Outflow'}</td><td class="mono">${e.speed == null ? '–' : e.speed.toFixed(1) + ' km/h'}</td></tr>`;
+    }).join('') : '<tr><td colspan="5" style="color:var(--muted)">No vehicle has crossed the line yet.</td></tr>';
+  }
+  updatePanels();
+})();
+</script>
+</body>
+</html>
