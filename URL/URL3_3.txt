@@ -1,2 +1,2 @@
 Neural Style Transfer
-http://127.0.0.1:5001/
+https://filippo1sacchiero.github.io/style_transfer/

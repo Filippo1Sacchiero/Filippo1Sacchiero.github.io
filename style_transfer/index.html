@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Neural Style Transfer</title>
+<meta name="description" content="Turn a photo into a painting with 9 fast neural style models, running in your browser.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f7fb; --card: #ffffff; --text: #141826; --muted: #5d6478; --line: #e3e6ef;
+    --accent: #4f46e5; --accent-ink: #ffffff; --accent-soft: #eef0ff; --shadow: 0 1px 2px rgba(20,24,38,.06), 0 8px 24px rgba(20,24,38,.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e1118; --card: #171b26; --text: #e9ecf5; --muted: #9aa2b8; --line: #2a3040;
+      --accent: #8b85ff; --accent-ink: #0e1118; --accent-soft: #22254a; --shadow: none;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e1118; --card: #171b26; --text: #e9ecf5; --muted: #9aa2b8; --line: #2a3040;
+    --accent: #8b85ff; --accent-ink: #0e1118; --accent-soft: #22254a; --shadow: none;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 Inter, system-ui, sans-serif; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 32px 16px 56px; }
+  header h1 { margin: 0 0 6px; font-size: clamp(1.6rem, 3vw, 2.2rem); letter-spacing: -.02em; }
+  header p { margin: 0; color: var(--muted); max-width: 680px; }
+  .grid { display: grid; grid-template-columns: 360px 1fr; gap: 20px; margin-top: 24px; align-items: start; }
+  @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px; box-shadow: var(--shadow); }
+  h2 { font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 10px; font-weight: 600; }
+  .step + .step { margin-top: 20px; }
+  .drop { border: 1.5px dashed var(--line); border-radius: 12px; padding: 18px; text-align: center; cursor: pointer; color: var(--muted); transition: border-color .15s, background .15s; }
+  .drop:hover, .drop.over { border-color: var(--accent); background: var(--accent-soft); }
+  .drop strong { color: var(--text); }
+  .samples { display: flex; gap: 8px; margin-top: 10px; }
+  .samples button { flex: 1; padding: 0; border: 2px solid transparent; border-radius: 8px; overflow: hidden; cursor: pointer; background: none; aspect-ratio: 4/3; }
+  .samples button.on { border-color: var(--accent); }
+  .samples img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .styles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .style { position: relative; padding: 0; border: 2px solid transparent; border-radius: 10px; overflow: hidden; cursor: pointer; background: var(--line); aspect-ratio: 1; }
+  .style img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .style span { position: absolute; left: 0; right: 0; bottom: 0; padding: 14px 6px 5px; font-size: .72rem; font-weight: 600; color: #fff; background: linear-gradient(transparent, rgba(0,0,0,.75)); text-align: left; line-height: 1.2; }
+  .style.on { border-color: var(--accent); }
+  .row { display: flex; align-items: center; gap: 10px; }
+  .row label { flex: 0 0 76px; color: var(--muted); font-size: .88rem; }
+  select, input[type=range] { flex: 1; }
+  select { font: inherit; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--text); }
+  input[type=range] { accent-color: var(--accent); }
+  .row + .row { margin-top: 10px; }
+  .val { width: 40px; text-align: right; font-variant-numeric: tabular-nums; font-size: .88rem; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-top: 18px; padding: 12px 16px; border: 0; border-radius: 10px; background: var(--accent); color: var(--accent-ink); font: 600 1rem Inter, sans-serif; cursor: pointer; }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .btn.ghost { width: auto; margin: 0; padding: 8px 12px; background: var(--accent-soft); color: var(--text); font-size: .88rem; text-decoration: none; }
+  .stage { position: relative; min-height: 420px; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: repeating-conic-gradient(var(--line) 0 25%, transparent 0 50%) 0 0 / 20px 20px; overflow: hidden; }
+  .stage canvas { max-width: 100%; max-height: 72vh; display: block; }
+  .empty { color: var(--muted); text-align: center; padding: 40px 20px; }
+  .overlay { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 12px; background: color-mix(in srgb, var(--card) 80%, transparent); font-weight: 500; text-align: center; padding: 20px; }
+  .overlay.show { display: flex; }
+  .spin { width: 34px; height: 34px; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--accent); animation: r 0.9s linear infinite; }
+  @keyframes r { to { transform: rotate(360deg); } }
+  .bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; margin-top: 12px; }
+  .meta { color: var(--muted); font-size: .88rem; }
+  .toggle { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .toggle button { border: 0; padding: 7px 12px; background: none; color: var(--muted); font: 500 .85rem Inter, sans-serif; cursor: pointer; }
+  .toggle button.on { background: var(--accent-soft); color: var(--text); }
+  .note { margin-top: 14px; color: var(--muted); font-size: .82rem; }
+  .err { color: #d03a3a; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Neural Style Transfer</h1>
+    <p>Repaint a photo in the style of a famous artwork. Nine fast-neural-style models (Johnson et al.) run with OpenCV.js directly in your browser, so your photo never leaves your device.</p>
+  </header>
+
+  <div class="grid">
+    <div class="card">
+      <div class="step">
+        <h2>1 · Photo</h2>
+        <div class="drop" id="drop"><strong>Choose a photo</strong> or drop it here</div>
+        <input type="file" id="file" accept="image/*" hidden>
+        <div class="samples" id="samples"></div>
+      </div>
+      <div class="step">
+        <h2>2 · Style</h2>
+        <div class="styles" id="styles"></div>
+      </div>
+      <div class="step">
+        <h2>3 · Settings</h2>
+        <div class="row">
+          <label for="size">Size</label>
+          <select id="size">
+            <option value="320">Small, 320 px (fast)</option>
+            <option value="512" selected>Medium, 512 px</option>
+            <option value="800">Large, 800 px (slow)</option>
+          </select>
+        </div>
+        <div class="row">
+          <label for="strength">Strength</label>
+          <input type="range" id="strength" min="0" max="100" value="100">
+          <span class="val" id="strengthVal">100%</span>
+        </div>
+      </div>
+      <button class="btn" id="run" disabled>Paint it</button>
+    </div>
+
+    <div class="card">
+      <div class="stage" id="stage">
+        <div class="empty" id="empty">Pick a photo and a style, then press <strong>Paint it</strong>.</div>
+        <canvas id="view" hidden></canvas>
+        <div class="overlay" id="overlay"><div class="spin"></div><div id="status">Loading OpenCV…</div></div>
+      </div>
+      <div class="bar" id="bar" hidden>
+        <div class="toggle">
+          <button id="showResult" class="on">Painted</button>
+          <button id="showOriginal">Original</button>
+        </div>
+        <span class="meta" id="meta"></span>
+        <a class="btn ghost" id="download" download="styled.jpg">Download</a>
+      </div>
+      <p class="note">The first time you use a style, its model (11–28 MB) is downloaded. After that it is reused. Large photos can take 10–30 seconds.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const STYLES = [
+    ['starry_night', 'Starry Night · Van Gogh'], ['the_scream', 'The Scream · Munch'],
+    ['la_muse', 'La Muse · Picasso'], ['composition_vii', 'Composition VII · Kandinsky'],
+    ['the_wave', 'The Great Wave · Hokusai'], ['udnie', 'Udnie · Picabia'],
+    ['mosaic', 'Mosaic'], ['candy', 'Candy'], ['feathers', 'Feathers'],
+  ];
+  const SAMPLES = ['portrait_face', 'fruits', 'cat_and_dog'];
+  const $ = (id) => document.getElementById(id);
+  const state = { img: null, style: 'starry_night', original: null, styled: null, busy: false, job: 0 };
+
+  // ---- UI build ----
+  STYLES.forEach(([key, name]) => {
+    const b = document.createElement('button');
+    b.className = 'style' + (key === state.style ? ' on' : '');
+    b.dataset.style = key;
+    b.title = name;
+    b.innerHTML = `<img src="thumbs/${key}.jpg" alt="" loading="lazy"><span>${name}</span>`;
+    b.onclick = () => {
+      state.style = key;
+      document.querySelectorAll('.style').forEach((x) => x.classList.toggle('on', x === b));
+    };
+    $('styles').appendChild(b);
+  });
+  SAMPLES.forEach((s) => {
+    const b = document.createElement('button');
+    b.innerHTML = `<img src="samples/${s}.jpg" alt="${s.replace(/_/g, ' ')}">`;
+    b.onclick = () => { loadImage(`samples/${s}.jpg`); document.querySelectorAll('.samples button').forEach((x) => x.classList.toggle('on', x === b)); };
+    $('samples').appendChild(b);
+  });
+
+  // ---- photo input ----
+  const drop = $('drop');
+  drop.onclick = () => $('file').click();
+  $('file').onchange = (e) => e.target.files[0] && useFile(e.target.files[0]);
+  drop.ondragover = (e) => { e.preventDefault(); drop.classList.add('over'); };
+  drop.ondragleave = () => drop.classList.remove('over');
+  drop.ondrop = (e) => { e.preventDefault(); drop.classList.remove('over'); const f = e.dataTransfer.files[0]; if (f) useFile(f); };
+  function useFile(f) {
+    document.querySelectorAll('.samples button').forEach((x) => x.classList.remove('on'));
+    loadImage(URL.createObjectURL(f));
+  }
+  function loadImage(src) {
+    const img = new Image();
+    img.onload = () => {
+      state.img = img; state.styled = null;
+      $('run').disabled = state.busy;
+      drawPreview();
+    };
+    img.onerror = () => setError('Could not read that image.');
+    img.src = src;
+  }
+
+  function resized(img, maxW) {
+    const s = Math.min(1, maxW / img.naturalWidth);
+    const w = Math.max(16, Math.round(img.naturalWidth * s)), h = Math.max(16, Math.round(img.naturalHeight * s));
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    c.getContext('2d').drawImage(img, 0, 0, w, h);
+    return c;
+  }
+  function drawPreview() {
+    const c = resized(state.img, +$('size').value);
+    state.original = c;
+    show(c);
+    $('bar').hidden = true;
+  }
+  $('size').onchange = () => { if (state.img && !state.busy) { state.styled = null; drawPreview(); } };
+
+  function show(canvas) {
+    const v = $('view');
+    v.width = canvas.width; v.height = canvas.height;
+    v.getContext('2d').drawImage(canvas, 0, 0);
+    v.hidden = false; $('empty').hidden = true;
+  }
+
+  // ---- strength blending (like + / - in the Python version) ----
+  function blended() {
+    const a = +$('strength').value / 100;
+    const c = document.createElement('canvas'); c.width = state.styled.width; c.height = state.styled.height;
+    const ctx = c.getContext('2d');
+    ctx.drawImage(state.original, 0, 0, c.width, c.height);
+    ctx.globalAlpha = a;
+    ctx.drawImage(state.styled, 0, 0);
+    return c;
+  }
+  function showResult() {
+    const c = blended();
+    show(c);
+    c.toBlob((b) => { const a = $('download'); if (a.href) URL.revokeObjectURL(a.href); a.href = URL.createObjectURL(b); a.download = `${state.style}.jpg`; }, 'image/jpeg', 0.92);
+    $('showResult').classList.add('on'); $('showOriginal').classList.remove('on');
+  }
+  $('strength').oninput = () => { $('strengthVal').textContent = $('strength').value + '%'; if (state.styled) showResult(); };
+  $('showResult').onclick = () => state.styled && showResult();
+  $('showOriginal').onclick = () => { if (!state.original) return; show(state.original); $('showOriginal').classList.add('on'); $('showResult').classList.remove('on'); };
+
+  // ---- worker ----
+  let worker;
+  function getWorker() {
+    if (worker) return worker;
+    worker = new Worker('worker.js');
+    worker.onmessage = ({ data }) => {
+      if (data.type === 'status') return setStatus(data.text);
+      if (data.id !== state.job) return;
+      busy(false);
+      if (data.type === 'error') return setError('Something went wrong: ' + data.text);
+      // The model output can be a few pixels larger than the input: scale it back to the photo size.
+      const raw = document.createElement('canvas'); raw.width = data.width; raw.height = data.height;
+      raw.getContext('2d').putImageData(new ImageData(data.pixels, data.width, data.height), 0, 0);
+      const c = document.createElement('canvas'); c.width = data.inWidth; c.height = data.inHeight;
+      c.getContext('2d').drawImage(raw, 0, 0, c.width, c.height);
+      state.styled = c;
+      const name = STYLES.find(([k]) => k === state.lastStyle)[1];
+      $('meta').textContent = `${name} · ${c.width}×${c.height} · ${(data.ms / 1000).toFixed(1)} s`;
+      $('bar').hidden = false;
+      showResult();
+    };
+    worker.onerror = (e) => { busy(false); setError('The style engine failed to load: ' + (e.message || 'unknown error')); };
+    return worker;
+  }
+  function setStatus(t) { $('status').textContent = t; }
+  function setError(t) { $('overlay').classList.remove('show'); $('empty').hidden = false; $('view').hidden = true; $('empty').innerHTML = `<span class="err">${t}</span>`; }
+  function busy(on) {
+    state.busy = on;
+    $('overlay').classList.toggle('show', on);
+    $('run').disabled = on || !state.img;
+    $('run').textContent = on ? 'Painting…' : 'Paint it';
+  }
+
+  $('run').onclick = () => {
+    if (!state.img || state.busy) return;
+    drawPreview();
+    const c = state.original;
+    const px = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+    state.job += 1; state.lastStyle = state.style;
+    busy(true); setStatus('Loading OpenCV…');
+    getWorker().postMessage({ id: state.job, style: state.style, width: c.width, height: c.height, rgba: px.buffer }, [px.buffer]);
+  };
+</script>
+</body>
+</html>
