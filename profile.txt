@@ -17,10 +17,11 @@ education=M.S. Hochschule Pforzheim
 email=sacchier@hs-pforzheim.de or filsacchiero@gmail.com
 linkedin=www.linkedin.com/in/filippo-sacchiero-145033302 
 
-about1=Filippo Sacchiero earned his B.S. in Business Administration in University of Ferrara, Italy.
-about2=and his M.S. from Hochschule Pforzheim, Germany
-about3=Juventus and Marvel fan
-about4=Ad Astra
+about1=I am Filippo Sacchiero and I earned my B.S. in Business Administration in University of Ferrara, in Italy
+about2=and my M.S. from Hochschule Pforzheim, in Germany.
+about3=I am a big Juventus and Marvel fan.
+
+about4=Ad Astra, sempre.
 
 phone=by request
 
