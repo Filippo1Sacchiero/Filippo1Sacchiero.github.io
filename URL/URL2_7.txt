@@ -1,2 +1,3 @@
 Extra Credit Challenge
 https://filippo1sacchiero.github.io/media_pipe/#particles
+An interactive particle effect driven by real-time MediaPipe tracking.

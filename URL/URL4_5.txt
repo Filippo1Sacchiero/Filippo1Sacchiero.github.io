@@ -1,2 +1,3 @@
 Gemini Skills-1 poster-designer
 https://filippo1sacchiero.github.io/screenshots/unit4_5.html
+A custom Gemini skill that designs posters from a short brief.

@@ -1,2 +1,3 @@
 Gesture recognition
 https://filippo1sacchiero.github.io/media_pipe/#gesture
+Recognising hand gestures such as thumbs-up or open palm from the webcam.

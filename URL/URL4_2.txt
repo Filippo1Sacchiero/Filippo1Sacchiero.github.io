@@ -1,2 +1,3 @@
 Gemini
 https://filippo1sacchiero.github.io/screenshots/unit4_2.html
+First hands-on tests with Google Gemini as a chat assistant.

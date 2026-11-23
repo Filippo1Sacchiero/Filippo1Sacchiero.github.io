@@ -1,2 +1,3 @@
 Claude - Multi-agent virtual team – Job Application Agent
 https://filippo1sacchiero.github.io/screenshots/unit4_7.html
+A multi-agent virtual team that scouts offers in emails and google, selects them and prepares a complete job application ready to send.

@@ -1,2 +1,3 @@
 Image Segmentation
 https://filippo1sacchiero.github.io/media_pipe/#background
+Separating the person from the background to blur or replace it.

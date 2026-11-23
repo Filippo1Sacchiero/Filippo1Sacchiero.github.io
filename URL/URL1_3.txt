@@ -1,2 +1,3 @@
 Teachable Machine
 https://filippo1sacchiero.github.io/media_pipe/#tm
+Training a custom image classifier in the browser with Google Teachable Machine.

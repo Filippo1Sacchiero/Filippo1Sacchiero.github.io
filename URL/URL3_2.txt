@@ -1,2 +1,3 @@
 YOLO
 https://filippo1sacchiero.github.io/media_pipe/#yolo
+Real-time object detection with a YOLO model running in the browser.

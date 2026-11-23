@@ -1,2 +1,3 @@
 Gemini to design a useful skill
 https://filippo1sacchiero.github.io/screenshots/unit4_8.html
+Using Gemini to design a new skill of my own from scratch.

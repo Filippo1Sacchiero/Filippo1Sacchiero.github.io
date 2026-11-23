@@ -1,2 +1,3 @@
 Pose landmark detection
 https://filippo1sacchiero.github.io/media_pipe/#fitness
+Detecting body keypoints with MediaPipe Pose to analyse fitness movements.

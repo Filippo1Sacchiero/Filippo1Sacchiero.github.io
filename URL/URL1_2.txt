@@ -1,2 +1,3 @@
 MediaPipe Tasks
 https://filippo1sacchiero.github.io/screenshots/unit1_2.html
+Exploring Google MediaPipe Tasks, ready-made on-device ML solutions for vision, text and audio.

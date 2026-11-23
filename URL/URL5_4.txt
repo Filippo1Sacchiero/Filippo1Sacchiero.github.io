@@ -1,2 +1,3 @@
 ChatGPT Plugins - canva
 https://drluarn.github.io/
+Designing visuals from ChatGPT through the Canva plugin.

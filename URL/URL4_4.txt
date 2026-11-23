@@ -1,2 +1,3 @@
 Gemini Gemini Canvas
 https://filippo1sacchiero.github.io/screenshots/unit4_4.html
+Creating and editing documents and code side by side with Gemini Canvas.

@@ -1,2 +1,3 @@
 Teachable Machine Object Classifier
 https://filippo1sacchiero.github.io/media_pipe/#tm
+A Teachable Machine object classifier integrated into my web app.

@@ -1,2 +1,3 @@
 Gemini Notebook
 https://filippo1sacchiero.github.io/screenshots/unit4_3.html
+Using Gemini to research and summarise my own documents and sources.

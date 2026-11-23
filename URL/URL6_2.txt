@@ -1,2 +1,3 @@
 CUE!
 https://drluarn.github.io/
+A team of AI agents in Cue! (strategy, finance and market analysts) for an MBA case and a weekly sales report.

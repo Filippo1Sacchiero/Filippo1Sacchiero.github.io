@@ -1,2 +1,3 @@
 Video object recognition
 https://filippo1sacchiero.github.io/media_pipe/#video
+Running object detection frame by frame on an uploaded video.

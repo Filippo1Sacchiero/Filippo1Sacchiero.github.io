@@ -1,2 +1,3 @@
 Gemini Skills-2 weekly-report
 https://filippo1sacchiero.github.io/screenshots/unit4_6.html
+A Gemini skill that turns notes into a structured weekly report.

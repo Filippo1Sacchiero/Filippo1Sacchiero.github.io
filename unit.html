@@ -305,6 +305,14 @@
             word-break: break-all;
         }
 
+        .unit-desc {
+            font-size: 0.85rem;
+            color: #574571;
+            opacity: 0.85;
+            margin: 0.4rem 0 0;
+            line-height: 1.35;
+        }
+
         .demo-link:hover {
             color: #3d2f52;
             text-decoration: underline;
@@ -729,8 +737,13 @@
                 .then(text => {
                     const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
                     const note = {};
+                    // Line 1: caption. Further lines: a URL (http...) becomes the demo link,
+                    // any other text becomes the short description shown under the card.
                     if (lines[0]) note.caption = lines[0];
-                    if (lines[1]) note.demoUrl = lines[1];
+                    lines.slice(1).forEach(l => {
+                        if (/^https?:\/\//.test(l)) { if (!note.demoUrl) note.demoUrl = l; }
+                        else if (!note.desc) note.desc = l;
+                    });
                     return note;
                 })
                 .catch(() => null);
@@ -796,6 +809,7 @@
                 if (note) {
                     if (note.caption) image.caption = note.caption;
                     if (note.demoUrl) image.demoUrl = note.demoUrl;
+                    if (note.desc) image.desc = note.desc;
                 }
             }));
         }
@@ -821,6 +835,7 @@
                             <h5>${fileName}</h5>
                             <p>${captionText}</p>
                             ${demoLinkHtml}
+                            ${image.desc ? `<p class="unit-desc">${image.desc}</p>` : ''}
                         </div>
                     </div>
                 `;

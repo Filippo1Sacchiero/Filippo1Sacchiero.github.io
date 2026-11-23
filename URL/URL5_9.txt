@@ -1,2 +1,3 @@
 GreatWaveRide
 https://filippo1sacchiero.github.io/great_wave_ride/
+A 3D browser game in Japanese woodblock style: ride beneath Hokusai's great wave.

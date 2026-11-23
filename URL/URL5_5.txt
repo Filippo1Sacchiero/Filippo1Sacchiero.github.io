@@ -1,2 +1,3 @@
 ChatGPT Sites
 https://ai-practice-lunch-workshop-nov27.luarn.chatgpt.site/
+A website generated and published with ChatGPT Sites.

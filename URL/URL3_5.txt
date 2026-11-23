@@ -1,2 +1,3 @@
 Pforzheim AI Course Islands
 https://filippo1sacchiero.github.io/course_islands_v2.html
+An interactive map of the Pforzheim AI course, with one island per topic.
