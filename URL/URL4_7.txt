@@ -1,2 +1,2 @@
-Gemini Skills-3 multi-agent virtual team – Job Application Agent
+Claude - Multi-agent virtual team – Job Application Agent
 https://filippo1sacchiero.github.io/screenshots/unit4_7.html
