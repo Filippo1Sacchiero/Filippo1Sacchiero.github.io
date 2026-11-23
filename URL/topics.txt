@@ -23,6 +23,7 @@ unit4_4:Gemini Gemini Canvas
 unit4_5:Gemini Skills-1 poster-designer
 unit4_6:Gemini Skills-2 weekly-report
 unit4_7:Gemini Skills-3 multi-agent virtual team
+unit4_9:NotebookLM YouTube Report
 unit5_1:n8n AI Agent
 unit5_2:ChatGPT multi-agent scheduled task
 unit5_3:ChatGPT  Skills

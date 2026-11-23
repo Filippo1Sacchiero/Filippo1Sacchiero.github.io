@@ -1,0 +1,3 @@
+NotebookLM YouTube Report
+https://filippo1sacchiero.github.io/screenshots/unit4_9.html
+Accurate report made with Youtube extension connected to NotebookLM (GeminiNotebook)
