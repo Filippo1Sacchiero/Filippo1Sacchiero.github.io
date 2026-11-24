@@ -1,3 +1,3 @@
 Hark Pro
-https://drluarn.github.io/
-Using Hark Pro to build a city dashboard, a weekly revenue report and a market report.
+https://filippo1sacchiero.github.io/screenshots/unit6_3.html
+Using Hark Pro as a personal dashboard (weather, usage) and to review a marketing report on the Taiwan bubble tea market: requirements check, fix list and draft feedback.
