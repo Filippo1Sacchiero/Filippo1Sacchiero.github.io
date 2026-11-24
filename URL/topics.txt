@@ -16,6 +16,7 @@ unit3_3:Neural Style Transfer
 unit3_4:Chat Bot
 unit3_5:Pforzheim AI Course Islands
 unit3_6:Extra Credit Challenge 
+unit3_7:CCTV Traffic Studio
 unit4_1:Ollama
 unit4_2:Gemini
 unit4_3:Gemini Notebook
