@@ -1,0 +1,3 @@
+Final Project · Project Status Watch
+https://filippo1sacchiero.github.io/project_status_watch/
+An AI agent that reviews the project plan every morning, flags what is late or at risk, and drafts the weekly status report for the project manager to approve.
