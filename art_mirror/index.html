@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="it">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Specchio d'Arte</title>
+<title>Art Mirror</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -116,8 +116,8 @@
 <div class="wrap">
   <header>
     <a class="back" href="../">← Portfolio</a>
-    <h1>Specchio d'Arte</h1>
-    <p>Mettiti davanti alla webcam ed entra in un quadro. Scegli il pittore e lo sfondo con le mani, poi fai 👍 e l'intelligenza artificiale ti ridipinge.</p>
+    <h1>Art Mirror</h1>
+    <p>Step in front of your webcam and walk into a painting. Pick the painter and the background with your hands, then give a 👍 and the AI repaints you.</p>
   </header>
 
   <div class="layout">
@@ -128,9 +128,9 @@
           <canvas id="overlay"></canvas>
           <canvas id="result" hidden></canvas>
           <div class="placeholder" id="placeholder">
-            <div class="big">Lo specchio è spento</div>
-            <button class="btn" id="startBtn">🎨 Accendi lo specchio</button>
-            <small style="color:var(--muted)">La webcam resta nel tuo browser: nessuna immagine viene inviata online.</small>
+            <div class="big">The mirror is off</div>
+            <button class="btn" id="startBtn">🎨 Turn on the mirror</button>
+            <small style="color:var(--muted)">Your webcam stays in your browser: no image is ever sent online.</small>
           </div>
           <div class="hud" id="hud" hidden>
             <span class="pill" id="hudStyle"></span>
@@ -144,7 +144,7 @@
           <div class="flash" id="flash"></div>
           <div class="painting" id="painting">
             <div class="brush"></div>
-            <div class="t">Il pittore è al lavoro…</div>
+            <div class="t">The painter is at work…</div>
             <small id="paintStatus"></small>
           </div>
           <div class="toast" id="toast"></div>
@@ -152,54 +152,54 @@
       </div>
 
       <div class="actions" id="liveActions" hidden>
-        <button class="btn" id="shootBtn">📸 Scatta (👍)</button>
-        <button class="btn ghost small" id="nextStyleBtn">Pittore successivo (✌️)</button>
-        <button class="btn ghost small" id="nextSceneBtn">Sfondo successivo (✋)</button>
+        <button class="btn" id="shootBtn">📸 Take the shot (👍)</button>
+        <button class="btn ghost small" id="nextStyleBtn">Next painter (✌️)</button>
+        <button class="btn ghost small" id="nextSceneBtn">Next background (✋)</button>
       </div>
       <div id="resultActions" hidden>
         <div class="seg" id="effects">
-          <button class="chip on" data-effect="all">Tutto dipinto</button>
-          <button class="chip" data-effect="realme">Tu reale, mondo dipinto</button>
-          <button class="chip" data-effect="paintme">Tu dipinto, mondo reale</button>
+          <button class="chip on" data-effect="all">All painted</button>
+          <button class="chip" data-effect="realme">Real you, painted world</button>
+          <button class="chip" data-effect="paintme">Painted you, real world</button>
         </div>
         <div class="actions">
-          <a class="btn" id="downloadBtn" download="ritratto.jpg">⬇️ Scarica il quadro</a>
-          <button class="btn ghost" id="againBtn">↩︎ Nuovo ritratto (✋)</button>
+          <a class="btn" id="downloadBtn" download="portrait.jpg">⬇️ Download the painting</a>
+          <button class="btn ghost" id="againBtn">↩︎ New portrait (✋)</button>
         </div>
       </div>
     </main>
 
     <aside>
       <div class="panel">
-        <h2>Il pittore</h2>
+        <h2>The painter</h2>
         <div class="styles" id="styles"></div>
         <div class="status" id="modelStatus"></div>
       </div>
       <div class="panel">
-        <h2>Lo sfondo</h2>
+        <h2>The background</h2>
         <div class="scenes" id="scenes"></div>
       </div>
       <div class="panel">
-        <h2>Comandi con le mani</h2>
+        <h2>Hand controls</h2>
         <ul class="legend">
-          <li><span class="e">✌️</span> Cambia pittore <kbd>S</kbd></li>
-          <li><span class="e">✋</span> Cambia sfondo <kbd>B</kbd></li>
-          <li><span class="e">👍</span> Scatta il ritratto <kbd>Spazio</kbd></li>
+          <li><span class="e">✌️</span> Change painter <kbd>S</kbd></li>
+          <li><span class="e">✋</span> Change background <kbd>B</kbd></li>
+          <li><span class="e">👍</span> Take the portrait <kbd>Space</kbd></li>
         </ul>
-        <p class="note">Tieni il gesto fermo per un attimo, finché il cerchio dorato si riempie.</p>
+        <p class="note">Hold the gesture still for a moment, until the golden ring fills up.</p>
       </div>
       <div class="panel">
-        <h2>La targhetta</h2>
+        <h2>The plaque</h2>
         <div class="field">
-          <label for="artist">Il tuo nome</label>
-          <input id="artist" maxlength="40" placeholder="Anonimo">
+          <label for="artist">Your name</label>
+          <input id="artist" maxlength="40" placeholder="Anonymous">
         </div>
         <div class="field">
-          <label for="quality">Qualità del dipinto</label>
+          <label for="quality">Painting quality</label>
           <select id="quality">
-            <option value="480">Veloce (circa 2–5 s)</option>
-            <option value="640" selected>Bilanciata</option>
-            <option value="800">Alta (più lenta)</option>
+            <option value="480">Fast</option>
+            <option value="640" selected>Balanced</option>
+            <option value="800">High (slower)</option>
           </select>
         </div>
       </div>
@@ -207,12 +207,12 @@
   </div>
 
   <section class="gallery" id="gallery" hidden>
-    <h2>La tua galleria</h2>
+    <h2>Your gallery</h2>
     <div class="shots" id="shots"></div>
   </section>
 
   <footer>
-    Progetto finale MMI5194 · MediaPipe Image Segmenter + Gesture Recognizer · Neural Style Transfer (OpenCV.js) · tutto gira nel browser
+    MMI5194 final project · MediaPipe Image Segmenter + Gesture Recognizer · Neural Style Transfer (OpenCV.js) · everything runs in your browser
   </footer>
 </div>
 
@@ -230,19 +230,19 @@ const HOLD_MS = 650;             // how long a gesture must be held
 const STYLE_TIMEOUT_MS = 120000; // give up on a painting after 2 minutes
 
 const STYLES = [
-  { key: 'starry_night', name: 'Van Gogh', work: 'Notte stellata' },
-  { key: 'the_wave', name: 'Hokusai', work: 'La grande onda' },
-  { key: 'the_scream', name: 'Munch', work: 'L\'urlo' },
-  { key: 'la_muse', name: 'Picasso', work: 'La musa' },
-  { key: 'composition_vii', name: 'Kandinsky', work: 'Composizione VII' },
+  { key: 'starry_night', name: 'Van Gogh', work: 'The Starry Night' },
+  { key: 'the_wave', name: 'Hokusai', work: 'The Great Wave' },
+  { key: 'the_scream', name: 'Munch', work: 'The Scream' },
+  { key: 'la_muse', name: 'Picasso', work: 'La Muse' },
+  { key: 'composition_vii', name: 'Kandinsky', work: 'Composition VII' },
   { key: 'udnie', name: 'Picabia', work: 'Udnie' },
 ];
 const SCENES = [
-  { key: 'room', name: 'La tua stanza', title: 'Autoritratto nello studio' },
-  { key: 'lake', name: 'Lago alpino', title: 'Viandante sul lago', src: '../media_pipe/static/backgrounds/1_mountain_lake.jpg' },
-  { key: 'beach', name: 'Spiaggia', title: 'Meriggio ai tropici', src: '../media_pipe/static/backgrounds/2_tropical_beach.jpg' },
-  { key: 'meadow', name: 'Prato alpino', title: 'Figura sul pascolo', src: '../media_pipe/static/backgrounds/3_alpine_meadow.jpg' },
-  { key: 'dunes', name: 'Deserto', title: 'Figura nel deserto', src: '../media_pipe/static/backgrounds/4_desert_dunes.jpg' },
+  { key: 'room', name: 'Your room', title: 'Self-Portrait in the Studio' },
+  { key: 'lake', name: 'Mountain lake', title: 'Wanderer by the Lake', src: '../media_pipe/static/backgrounds/1_mountain_lake.jpg' },
+  { key: 'beach', name: 'Beach', title: 'Tropical Afternoon', src: '../media_pipe/static/backgrounds/2_tropical_beach.jpg' },
+  { key: 'meadow', name: 'Alpine meadow', title: 'Figure in the Meadow', src: '../media_pipe/static/backgrounds/3_alpine_meadow.jpg' },
+  { key: 'dunes', name: 'Desert', title: 'Figure in the Desert', src: '../media_pipe/static/backgrounds/4_desert_dunes.jpg' },
 ];
 const GESTURES = {
   Victory: { icon: '✌️', action: 'style' },
@@ -288,15 +288,15 @@ SCENES.forEach((sc, i) => {
   b.onclick = () => setScene(i);
   $('scenes').append(b);
 });
-$('artist').value = store.get('arte_artist');
-$('artist').oninput = () => store.set('arte_artist', $('artist').value.trim());
+$('artist').value = store.get('artmirror_artist');
+$('artist').oninput = () => store.set('artmirror_artist', $('artist').value.trim());
 
 function setStyle(i, announce) {
   S.style = (i + STYLES.length) % STYLES.length;
   [...$('styles').children].forEach((b, j) => b.classList.toggle('on', j === S.style));
   const st = STYLES[S.style];
   $('hudStyle').textContent = `🖌 ${st.name}`;
-  if (announce) toast(`Alla maniera di ${st.name}`);
+  if (announce) toast(`In the style of ${st.name}`);
   warmUp(st.key);
 }
 function setScene(i, announce) {
@@ -326,14 +326,14 @@ function getWorker() {
     pending.delete(data.id);
     data.type === 'error' ? p.reject(new Error(data.text)) : p.resolve(data);
   };
-  worker.onerror = (e) => { for (const p of pending.values()) p.reject(new Error(e.message || 'motore di stile non disponibile')); pending.clear(); };
+  worker.onerror = (e) => { for (const p of pending.values()) p.reject(new Error(e.message || 'style engine unavailable')); pending.clear(); };
   return worker;
 }
 function paint(style, canvas) {
   const job = () => new Promise((resolve, reject) => {
     const id = ++jobId;
     const px = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
-    const timer = setTimeout(() => { if (pending.delete(id)) reject(new Error('tempo scaduto')); }, STYLE_TIMEOUT_MS);
+    const timer = setTimeout(() => { if (pending.delete(id)) reject(new Error('timed out')); }, STYLE_TIMEOUT_MS);
     const done = (fn) => (v) => { clearTimeout(timer); fn(v); };
     pending.set(id, { resolve: done(resolve), reject: done(reject) });
     getWorker().postMessage({ id, style, width: canvas.width, height: canvas.height, rgba: px.buffer }, [px.buffer]);
@@ -345,12 +345,12 @@ function paint(style, canvas) {
 // Paint a tiny image in the background so the chosen model is already downloaded when you take the photo.
 function warmUp(style) {
   if (S.mode === 'off') return; // nothing is downloaded until the mirror is switched on
-  if (warmed.has(style)) { $('modelStatus').textContent = `✓ ${STYLES.find((s) => s.key === style).name} è pronto`; return; }
+  if (warmed.has(style)) { $('modelStatus').textContent = `✓ ${STYLES.find((s) => s.key === style).name} is ready`; return; }
   warmed.add(style);
-  $('modelStatus').textContent = 'Preparo il pennello…';
+  $('modelStatus').textContent = 'Preparing the brush…';
   paint(style, mk(128, 96)).then(
-    () => { if (STYLES[S.style].key === style) $('modelStatus').textContent = `✓ ${STYLES[S.style].name} è pronto`; },
-    (e) => { console.warn('warm-up', e); warmed.delete(style); $('modelStatus').textContent = 'Il modello verrà caricato allo scatto.'; },
+    () => { if (STYLES[S.style].key === style) $('modelStatus').textContent = `✓ ${STYLES[S.style].name} is ready`; },
+    (e) => { console.warn('warm-up', e); warmed.delete(style); $('modelStatus').textContent = 'The model will load when you take the shot.'; },
   );
 }
 
@@ -360,7 +360,7 @@ async function loadModels() {
   const fileset = await FilesetResolver.forVisionTasks(WASM);
   const make = async (Task, opts) => {
     try { return await Task.createFromOptions(fileset, { ...opts, baseOptions: { ...opts.baseOptions, delegate: 'GPU' } }); }
-    catch (e) { console.warn('GPU non disponibile, uso la CPU', e); return Task.createFromOptions(fileset, { ...opts, baseOptions: { ...opts.baseOptions, delegate: 'CPU' } }); }
+    catch (e) { console.warn('GPU unavailable, using CPU', e); return Task.createFromOptions(fileset, { ...opts, baseOptions: { ...opts.baseOptions, delegate: 'CPU' } }); }
   };
   [segmenter, recognizer] = await Promise.all([
     make(ImageSegmenter, { baseOptions: { modelAssetPath: SEG_MODEL }, runningMode: 'VIDEO', outputConfidenceMasks: true, outputCategoryMask: false }),
@@ -374,10 +374,10 @@ $('startBtn').onclick = async () => {
   const btn = $('startBtn');
   btn.disabled = true;
   try {
-    if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) throw new Error('Questo browser non può usare la webcam qui. Apri la pagina dal sito (https).');
-    btn.textContent = 'Carico i modelli…';
+    if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) throw new Error('This browser cannot use the webcam here. Open the page from the website (https).');
+    btn.textContent = 'Loading the models…';
     await loadModels();
-    btn.textContent = 'Aspetto la webcam…';
+    btn.textContent = 'Waiting for the webcam…';
     video.srcObject = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' }, audio: false });
     await video.play();
     $('placeholder').hidden = true;
@@ -388,10 +388,10 @@ $('startBtn').onclick = async () => {
     loop();
   } catch (e) {
     console.error(e);
-    const msg = e.name === 'NotAllowedError' ? 'Hai negato l\'accesso alla webcam. Consentilo dalle impostazioni del browser e ricarica la pagina.'
-      : e.name === 'NotFoundError' ? 'Non trovo nessuna webcam collegata.'
+    const msg = e.name === 'NotAllowedError' ? 'Webcam access was denied. Allow it in your browser settings and reload the page.'
+      : e.name === 'NotFoundError' ? 'No webcam found.'
       : (e.message || String(e));
-    $('placeholder').innerHTML = `<div class="big">Lo specchio non si accende</div><div class="err">${msg}</div>`;
+    $('placeholder').innerHTML = `<div class="big">The mirror could not turn on</div><div class="err">${msg}</div>`;
   }
 };
 
@@ -525,7 +525,7 @@ async function countdown() {
   const shot = {
     style: STYLES[S.style], scene: SCENES[S.scene],
     composite: mk(W, H), person: mk(W, H),
-    artist: $('artist').value.trim() || 'Anonimo',
+    artist: $('artist').value.trim() || 'Anonymous',
     date: new Date(),
   };
   shot.composite.getContext('2d').drawImage(live, 0, 0);
@@ -533,7 +533,7 @@ async function countdown() {
   octx.clearRect(0, 0, W, H);
   S.mode = 'painting';
   $('painting').classList.add('on');
-  $('paintStatus').textContent = 'Preparo la tela…';
+  $('paintStatus').textContent = 'Preparing the canvas…';
   $('liveActions').hidden = true;
 
   try {
@@ -552,7 +552,7 @@ async function countdown() {
   } catch (e) {
     console.error(e);
     $('painting').classList.remove('on');
-    toast('Il pittore ha avuto un problema, riprova');
+    toast('The painter ran into a problem, please try again');
     S.mode = 'live';
     $('liveActions').hidden = false;
   }
@@ -621,7 +621,7 @@ function drawCard(ctx, shot, art, progress = 1) {
   ctx.font = 'italic 500 28px "Cormorant Garamond", serif';
   ctx.fillText(fit(ctx, `${shot.scene.title}, ${shot.date.getFullYear()}`, lw - 50), CARD_W / 2, ly + 74);
   ctx.font = '500 17px Inter, sans-serif';
-  ctx.fillText(fit(ctx, `Alla maniera di ${shot.style.name} · pixel su tela digitale`, lw - 50), CARD_W / 2, ly + 104);
+  ctx.fillText(fit(ctx, `In the style of ${shot.style.name} · pixels on digital canvas`, lw - 50), CARD_W / 2, ly + 104);
 }
 function fit(ctx, text, max) {
   if (ctx.measureText(text).width <= max) return text;
@@ -665,7 +665,7 @@ function exportCard() {
     const a = $('downloadBtn');
     if (a.href) URL.revokeObjectURL(a.href);
     a.href = URL.createObjectURL(blob);
-    a.download = `ritratto_${shot.style.key}.jpg`;
+    a.download = `portrait_${shot.style.key}.jpg`;
     if (addedToGallery !== shot) {
       addedToGallery = shot;
       const img = new Image(); img.src = URL.createObjectURL(blob); img.alt = shot.scene.title;
